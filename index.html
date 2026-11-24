@@ -117,6 +117,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .cnt{text-align:right;font-size:14px;color:var(--fl,var(--km));padding:4px 16px 10px}
 .fc.n .cnt{color:var(--mute)}
 #f-att{max-width:100%;max-height:160px;border-radius:12px;margin:8px 0}
+
+.sw{position:relative;overflow:hidden}
+.del{position:absolute;top:0;right:0;bottom:0;width:88px;border:0;background:#E5484D;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sw .rw{position:relative;background:var(--bg);transition:transform .2s;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+#toast .link{color:inherit;text-decoration:underline;padding:0 0 0 10px}
+
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+#app{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:env(safe-area-inset-top,0px) 0 calc(150px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -139,7 +147,7 @@ const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(n))+' ₽';
 const num=n=>(+n).toLocaleString('ru-RU');
 const fd=d=>d?new Date(d+'T00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'}):'Без даты';
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Не удалось сохранить: нет места. Сделайте резервную копию.')}}
-function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+function toast(m,u){const t=$('#toast');t.textContent=m;if(u){const b=document.createElement('button');b.className='link';b.textContent='Отменить';b.onclick=()=>{u();t.hidden=true};t.append(b)}t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,u?6000:2600)}
 function sheet(h){const s=$('#sheet');s.className='';s.innerHTML='<div class="panel">'+h+'</div>';s.hidden=false}
 function closeSheet(){const s=$('#sheet');s.hidden=true;s.className='';delArm=null}
 function curRecs(){return S.recs.filter(r=>r.car===S.cur).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(+b.km||0)-(+a.km||0))}
@@ -154,7 +162,7 @@ wr:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0
 doc:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6"/>',
 bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
 chart:'<path d="M3 3v18h18M7 15l4-4 3 3 5-6"/>',
-x:'<path d="M18 6 6 18M6 6l12 12"/>',check:'<path d="M20 6 9 17l-5-5"/>',
+x:'<path d="M18 6 6 18M6 6l12 12"/>',trash:'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',check:'<path d="M20 6 9 17l-5-5"/>',
 hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>'};
 const ic=(k,s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
 const T=[['rep','wr','ТО и Ремонт'],['doc','doc','Бумаги'],['rem','bell','Напомнить'],['rpt','chart','Отчеты']];
@@ -164,7 +172,7 @@ function row(r){
   const o=openId===r.id;
   const th=r.photo?`<img class="th" src="${r.photo}" alt="">`:`<span class="th">${ic('wr',34,'#D9531E')}</span>`;
   const sub=(r.wc?`<span>${ic('hand',15)} ${money(r.wc)}</span>`:'')+(r.pc?`<span>${ic('cog',15)} ${money(r.pc)}</span>`:'');
-  return `<article class="rec"><div class="rw" onclick="openId=${o?'null':`'${r.id}'`};render()">${th}<div class="dt"><b>${r.date?fdt(r.date):'без даты'}</b>${r.km?`<i>${num(r.km)} км</i>`:''}</div><div class="tt">${esc(r.title)}</div><div class="am">${r.cost?`<b>${money(r.cost)}</b>`:''}${sub}</div></div>`+
+  return `<article class="rec"><div class="sw"><button class="del" aria-label="Удалить" onclick="swDel('rec','${r.id}')">${ic('trash',26,'#fff')}</button><div class="rw" data-id="${r.id}" onclick="openId=${o?'null':`'${r.id}'`};render()">${th}<div class="dt"><b>${r.date?fdt(r.date):'без даты'}</b>${r.km?`<i>${num(r.km)} км</i>`:''}</div><div class="tt">${esc(r.title)}</div><div class="am">${r.cost?`<b>${money(r.cost)}</b>`:''}${sub}</div></div></div>`+
   (o?`<div class="det">${r.parts?`<p><span>Запчасти</span>${esc(r.parts)}</p>`:''}${r.notes?`<p><span>Комментарий</span>${esc(r.notes)}</p>`:''}${r.photo?`<img src="${r.photo}" alt="Фото">`:''}${r.att?`<img src="${r.att}" alt="Вложение">`:''}<div class="row"><button class="btn sec" onclick="recSheet('${r.id}')">Изменить</button><button class="btn sec dng" onclick="delRec('${r.id}',this)">Удалить</button></div></div>`:'')+`</article>`;
 }
 function report(){
@@ -173,7 +181,7 @@ function report(){
   const ys=Object.keys(by).sort().reverse(),mx=Math.max(1,...ys.map(y=>by[y].t)),tot=ys.reduce((a,y)=>a+by[y].t,0);
   return `<div class="pad"><p class="mute">Всего потрачено</p><h2 class="big">${money(tot)}</h2>`+ys.map(y=>{const o=by[y];return `<div class="yr"><div class="yh"><b>${y}</b><b>${money(o.t)}</b></div><div class="bar2"><i style="width:${Math.round(o.t/mx*100)}%"></i></div><p class="mute">Записей: ${o.n}${o.p?', запчасти '+money(o.p):''}${o.w?', работа '+money(o.w):''}</p></div>`}).join('')+'</div>';
 }
-function listHtml(){
+function listHtml(){swOpen=null;
   if(tab==='rpt')return report();
   if(tab==='rem'){
     const t=new Date().toISOString().slice(0,10),km=Math.max(0,...S.recs.filter(r=>r.car===S.cur).map(r=>+r.km||0));
@@ -181,7 +189,7 @@ function listHtml(){
     return rs.length?rs.map(x=>{
       const late=(x.date&&x.date<t)||(x.km&&km>=+x.km);
       const when=[x.date?'до '+fdt(x.date):'',x.km?'при '+num(x.km)+' км':''].filter(Boolean).join(', ');
-      return `<article class="rec"><div class="rw rm"><span class="th">${ic('bell',30,late?'#E5484D':'#D9531E')}</span><div class="tt"><b>${esc(x.title)}</b><span class="mute">${when}${late?'. Пора!':''}</span></div><button class="link" onclick="delRem('${x.id}')">Готово</button></div></article>`}).join(''):
+      return `<article class="rec"><div class="sw"><button class="del" aria-label="Удалить" onclick="swDel('rem','${x.id}')">${ic('trash',26,'#fff')}</button><div class="rw rm" data-id="${x.id}"><span class="th">${ic('bell',30,late?'#E5484D':'#D9531E')}</span><div class="tt"><b>${esc(x.title)}</b><span class="mute">${when}${late?'. Пора!':''}</span></div><button class="link" onclick="delRem('${x.id}')">Готово</button></div></div></article>`}).join(''):
       '<p class="mute pad">Напоминаний нет. Нажмите «+», например: «Замена масла при 345 000 км».</p>';
   }
   const f=q.toLowerCase();
@@ -253,6 +261,49 @@ function saveRec(){
   if(editing)Object.assign(S.recs.find(x=>x.id===editing),o);
   else{const id=uid();S.recs.push(Object.assign({id,car:S.cur,kind:editKind},o));openId=id}
   save();closeSheet();render();
+}
+let sw=null,swOpen=null,swT=0;
+function closeSw(){document.querySelectorAll('.rw[data-id]').forEach(r=>{r.style.transform=''});swOpen=null;swT=Date.now()}
+document.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.rw[data-id]');
+  if(swOpen&&!e.target.closest('.del')&&!(el&&el.dataset.id===swOpen))closeSw();
+  sw=el?{el,x:e.clientX,y:e.clientY,base:el.dataset.id===swOpen?-88:0,dx:0,drag:false}:null;
+});
+document.addEventListener('pointermove',e=>{
+  if(!sw)return;
+  const dx=e.clientX-sw.x,dy=e.clientY-sw.y;
+  if(!sw.drag){
+    if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.5){sw.drag=true;sw.el.style.transition='none';try{sw.el.setPointerCapture(e.pointerId)}catch(_){}}
+    else return;
+  }
+  sw.dx=Math.max(-88,Math.min(0,sw.base+dx));
+  sw.el.style.transform='translateX('+sw.dx+'px)';
+});
+function swEnd(){
+  if(!sw)return;
+  const s=sw;sw=null;
+  if(!s.drag)return;
+  const open=s.dx<-44;
+  s.el.style.transition='';
+  s.el.style.transform=open?'translateX(-88px)':'';
+  swOpen=open?s.el.dataset.id:null;swT=Date.now();
+}
+document.addEventListener('pointerup',swEnd);
+document.addEventListener('pointercancel',swEnd);
+document.addEventListener('click',e=>{
+  if(e.target.closest('.del')||!e.target.closest('#list'))return;
+  if(Date.now()-swT<400||swOpen){if(swOpen)closeSw();e.stopPropagation();e.preventDefault()}
+},true);
+function swDel(k,id){
+  swOpen=null;
+  if(k==='rem'){
+    const i=(S.rem||[]).findIndex(x=>x.id===id);if(i<0)return;
+    const it=S.rem.splice(i,1)[0];save();render();
+    toast('Напоминание удалено',()=>{S.rem.splice(i,0,it);save();render()});return;
+  }
+  const i=S.recs.findIndex(x=>x.id===id);if(i<0)return;
+  const it=S.recs.splice(i,1)[0];if(openId===id)openId=null;save();render();
+  toast('Запись удалена',()=>{S.recs.splice(Math.min(i,S.recs.length),0,it);save();render()});
 }
 function delRec(id,b){
   if(delArm!==id){delArm=id;b.textContent='Точно удалить?';return}
