@@ -212,7 +212,7 @@ function render(){
   ${sq?`<input class="q" id="q" placeholder="Поиск по записям" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHtml()">`:''}
   <div id="list">${listHtml()}</div>`;
 }
-function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div>`)}
+function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div><div class="row"><button class="btn sec" onclick="hardUpdate()">Обновить приложение</button></div><p class="mute" style="margin-top:14px">Версия ${VER}. Записи при обновлении не удаляются.</p>`)}
 function garageSheet(){sheet(`<h2>Гараж</h2>${S.cars.map(c=>`<div class="row"><button class="btn sec" onclick="carSheet('${c.id}')">${esc(c.name)}</button></div>`).join('')}<div class="row"><button class="btn" onclick="carSheet()">Добавить автомобиль</button></div>`)}
 function remSheet(){sheet(`<h2>Новое напоминание</h2><label>Что сделать<input id="f-rt" placeholder="Замена масла"></label><div class="two"><label>Дата<input id="f-rd" type="date"></label><label>При пробеге, км<input id="f-rk" type="number" inputmode="numeric"></label></div><p class="mute">Уведомления на телефон страница прислать не может: наступившие напоминания подсвечиваются в списке.</p><div class="row"><button class="btn" onclick="saveRem()">Сохранить</button><button class="btn sec" onclick="closeSheet()">Отмена</button></div>`)}
 function saveRem(){const t=$('#f-rt').value.trim();if(!t){toast('Укажите, что сделать');return}S.rem=S.rem||[];S.rem.push({id:uid(),car:S.cur,title:t,date:$('#f-rd').value,km:$('#f-rk').value});save();closeSheet();render()}
@@ -307,10 +307,12 @@ function swDel(k,id){
   toast('Запись удалена',()=>{S.recs.splice(Math.min(i,S.recs.length),0,it);save();render()});
 }
 /*SYNC*/
-const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co/rest/v1/',key:''};
+const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:''};
+const VER='5';
+const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
-if(!SY.url)SY.url=CFG.url;if(!SY.key)SY.key=CFG.key;
+SY.url=nu(SY.url||CFG.url);if(!SY.key)SY.key=CFG.key;
 let syT=null,syBusy=false,syQuiet=false,syMsg='',SYR=null;
 const sySave=()=>{try{localStorage.setItem('garage-sync',JSON.stringify(SY))}catch(e){}};
 const syOn=()=>!!(SY.ses&&SY.url&&SY.key);
@@ -319,7 +321,7 @@ async function api(path,o){
   o=o||{};
   const h=Object.assign({apikey:SY.key,'Content-Type':'application/json'},o.h);
   if(!o.noauth&&SY.ses)h.Authorization='Bearer '+SY.ses.access_token;
-  const r=await fetch(SY.url.replace(/\/+$/,'')+path,{method:o.m||'GET',headers:h,body:o.b?JSON.stringify(o.b):undefined});
+  const r=await fetch(nu(SY.url)+path,{method:o.m||'GET',headers:h,body:o.b?JSON.stringify(o.b):undefined});
   const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
   if(!r.ok){const e=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('Ошибка '+r.status));e.status=r.status;throw e}
   return j;
@@ -388,7 +390,7 @@ async function syTake(k){
   }catch(e){toast(e.message)}finally{syBusy=false}
 }
 async function syAuth(mode){
-  const url=$('#a-url').value.trim(),key=$('#a-key').value.trim(),email=$('#a-mail').value.trim(),pw=$('#a-pw').value;
+  const url=nu($('#a-url').value),key=$('#a-key').value.trim(),email=$('#a-mail').value.trim(),pw=$('#a-pw').value;
   if(!/^https:\/\//.test(url)||!key||!email||pw.length<6){toast('Проверьте поля: адрес https://…, ключ, почта, пароль от 6 символов');return}
   SY.url=url;SY.key=key;
   try{
@@ -399,6 +401,13 @@ async function syAuth(mode){
     }else setSes(await api('/auth/v1/token?grant_type=password',{m:'POST',b:{email,password:pw},noauth:true}));
     SY.base=null;SY.dirty=false;sySave();closeSheet();await syncNow(true);
   }catch(e){toast(e.message)}
+}
+async function hardUpdate(){
+  try{
+    if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}
+    if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
+  }catch(e){}
+  location.reload();
 }
 function syOut(){SY.ses=null;SY.base=null;SY.dirty=false;sySave();closeSheet();toast('Вы вышли. Данные остались на устройстве')}
 function accountSheet(){
