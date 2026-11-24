@@ -1,4 +1,4 @@
-const V='zhurnal-to-v3';
+const V='zhurnal-to-v4';
 const CORE=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const XLSX='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 self.addEventListener('install',e=>{
@@ -12,7 +12,7 @@ self.addEventListener('activate',e=>{
 });
 self.addEventListener('fetch',e=>{
   const r=e.request;
-  if(r.method!=='GET'||!/^https?:/.test(r.url))return;
+  if(r.method!=='GET'||!/^https?:/.test(r.url)||r.headers.has('apikey')||r.headers.has('authorization'))return;
   e.respondWith(caches.match(r,{ignoreSearch:true}).then(hit=>{
     const net=fetch(r).then(res=>{
       if(res&&(res.ok||res.type==='opaque')){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp))}

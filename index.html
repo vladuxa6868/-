@@ -146,7 +146,8 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(n))+' ₽';
 const num=n=>(+n).toLocaleString('ru-RU');
 const fd=d=>d?new Date(d+'T00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'}):'Без даты';
-function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Не удалось сохранить: нет места. Сделайте резервную копию.')}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('Не удалось сохранить: нет места. Сделайте резервную копию.')}
+  syncSoon();}
 function toast(m,u){const t=$('#toast');t.textContent=m;if(u){const b=document.createElement('button');b.className='link';b.textContent='Отменить';b.onclick=()=>{u();t.hidden=true};t.append(b)}t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,u?6000:2600)}
 function sheet(h){const s=$('#sheet');s.className='';s.innerHTML='<div class="panel">'+h+'</div>';s.hidden=false}
 function closeSheet(){const s=$('#sheet');s.hidden=true;s.className='';delArm=null}
@@ -211,7 +212,7 @@ function render(){
   ${sq?`<input class="q" id="q" placeholder="Поиск по записям" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHtml()">`:''}
   <div id="list">${listHtml()}</div>`;
 }
-function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div>`)}
+function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div>`)}
 function garageSheet(){sheet(`<h2>Гараж</h2>${S.cars.map(c=>`<div class="row"><button class="btn sec" onclick="carSheet('${c.id}')">${esc(c.name)}</button></div>`).join('')}<div class="row"><button class="btn" onclick="carSheet()">Добавить автомобиль</button></div>`)}
 function remSheet(){sheet(`<h2>Новое напоминание</h2><label>Что сделать<input id="f-rt" placeholder="Замена масла"></label><div class="two"><label>Дата<input id="f-rd" type="date"></label><label>При пробеге, км<input id="f-rk" type="number" inputmode="numeric"></label></div><p class="mute">Уведомления на телефон страница прислать не может: наступившие напоминания подсвечиваются в списке.</p><div class="row"><button class="btn" onclick="saveRem()">Сохранить</button><button class="btn sec" onclick="closeSheet()">Отмена</button></div>`)}
 function saveRem(){const t=$('#f-rt').value.trim();if(!t){toast('Укажите, что сделать');return}S.rem=S.rem||[];S.rem.push({id:uid(),car:S.cur,title:t,date:$('#f-rd').value,km:$('#f-rk').value});save();closeSheet();render()}
@@ -305,6 +306,114 @@ function swDel(k,id){
   const it=S.recs.splice(i,1)[0];if(openId===id)openId=null;save();render();
   toast('Запись удалена',()=>{S.recs.splice(Math.min(i,S.recs.length),0,it);save();render()});
 }
+/*SYNC*/
+const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co/rest/v1/',key:''};
+let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
+SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
+if(!SY.url)SY.url=CFG.url;if(!SY.key)SY.key=CFG.key;
+let syT=null,syBusy=false,syQuiet=false,syMsg='',SYR=null;
+const sySave=()=>{try{localStorage.setItem('garage-sync',JSON.stringify(SY))}catch(e){}};
+const syOn=()=>!!(SY.ses&&SY.url&&SY.key);
+function syncSoon(){if(syQuiet||!syOn())return;SY.dirty=true;sySave();clearTimeout(syT);syT=setTimeout(()=>syncNow(),2500)}
+async function api(path,o){
+  o=o||{};
+  const h=Object.assign({apikey:SY.key,'Content-Type':'application/json'},o.h);
+  if(!o.noauth&&SY.ses)h.Authorization='Bearer '+SY.ses.access_token;
+  const r=await fetch(SY.url.replace(/\/+$/,'')+path,{method:o.m||'GET',headers:h,body:o.b?JSON.stringify(o.b):undefined});
+  const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+  if(!r.ok){const e=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('Ошибка '+r.status));e.status=r.status;throw e}
+  return j;
+}
+function setSes(j){SY.ses={access_token:j.access_token,refresh_token:j.refresh_token,exp:Date.now()+(j.expires_in-60)*1000,uid:j.user.id,email:j.user.email};sySave()}
+async function ensure(){
+  if(Date.now()<SY.ses.exp)return;
+  setSes(await api('/auth/v1/token?grant_type=refresh_token',{m:'POST',b:{refresh_token:SY.ses.refresh_token},noauth:true}));
+}
+function merge(a,b){
+  const o={cars:[].concat(a.cars),recs:[].concat(a.recs),rem:[].concat(a.rem||[]),cur:a.cur};
+  b.cars.forEach(c=>{if(!o.cars.some(x=>x.id===c.id))o.cars.push(c)});
+  b.recs.forEach(r=>{if(!o.recs.some(x=>x.id===r.id))o.recs.push(r)});
+  (b.rem||[]).forEach(r=>{if(!o.rem.some(x=>x.id===r.id))o.rem.push(r)});
+  return o;
+}
+function pull(rem){
+  S=rem.data;if(!S.cars)S={cars:[],cur:null,recs:[]};
+  if(!S.cars.find(c=>c.id===S.cur))S.cur=S.cars[0]?S.cars[0].id:null;
+  syQuiet=true;save();syQuiet=false;
+  SY.base=rem.updated_at;SY.dirty=false;sySave();openId=null;render();
+}
+async function push(base){
+  const now=new Date().toISOString();let res;
+  if(base===null)res=await api('/rest/v1/journal',{m:'POST',b:{user_id:SY.ses.uid,data:S,updated_at:now},h:{Prefer:'return=representation'}});
+  else{
+    res=await api('/rest/v1/journal?user_id=eq.'+SY.ses.uid+'&updated_at=eq.'+encodeURIComponent(base),{m:'PATCH',b:{data:S,updated_at:now},h:{Prefer:'return=representation'}});
+    if(!res||!res.length){SY.dirty=true;sySave();throw new Error('В облаке появились другие данные. Нажмите «Синхронизировать» ещё раз')}
+  }
+  SY.base=res[0].updated_at;SY.dirty=false;sySave();
+}
+async function syncNow(manual){
+  if(!syOn()||syBusy)return;
+  if(typeof navigator!=='undefined'&&navigator.onLine===false){if(manual)toast('Нет интернета');return}
+  syBusy=true;
+  try{
+    await ensure();
+    const rows=await api('/rest/v1/journal?select=data,updated_at&limit=1');
+    const rem=rows&&rows[0];
+    if(!rem){if(S.cars.length||SY.dirty)await push(null)}
+    else if(SY.base===rem.updated_at){if(SY.dirty)await push(rem.updated_at)}
+    else if(JSON.stringify(rem.data)===JSON.stringify(S)){SY.base=rem.updated_at;SY.dirty=false;sySave()}
+    else if(!S.cars.length||(!SY.dirty&&SY.base))pull(rem);
+    else conflict(rem);
+    syMsg='Синхронизировано в '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    if(manual)toast('Готово');
+  }catch(e){
+    if(e.status===400||e.status===401){SY.ses=null;sySave();syMsg='Нужно войти заново'}
+    else syMsg='Ошибка синхронизации: '+e.message;
+    if(manual)toast(syMsg);
+  }finally{syBusy=false}
+}
+function conflict(rem){
+  SYR=rem;
+  sheet('<h2>Данные различаются</h2><p class="mute">В облаке и на этом устройстве разные записи. Что оставить?</p><div class="row"><button class="btn" onclick="syTake(\'merge\')">Объединить (рекомендуется)</button></div><div class="row"><button class="btn sec" onclick="syTake(\'cloud\')">Взять из облака</button></div><div class="row"><button class="btn sec dng" onclick="syTake(\'phone\')">Взять с этого устройства</button></div>');
+}
+async function syTake(k){
+  closeSheet();syBusy=true;
+  try{
+    if(k==='cloud')pull(SYR);
+    else{
+      if(k==='merge'){S=merge(S,SYR.data);syQuiet=true;save();syQuiet=false}
+      await push(SYR.updated_at);render();
+    }
+    toast('Готово');
+  }catch(e){toast(e.message)}finally{syBusy=false}
+}
+async function syAuth(mode){
+  const url=$('#a-url').value.trim(),key=$('#a-key').value.trim(),email=$('#a-mail').value.trim(),pw=$('#a-pw').value;
+  if(!/^https:\/\//.test(url)||!key||!email||pw.length<6){toast('Проверьте поля: адрес https://…, ключ, почта, пароль от 6 символов');return}
+  SY.url=url;SY.key=key;
+  try{
+    if(mode==='up'){
+      const j=await api('/auth/v1/signup',{m:'POST',b:{email,password:pw},noauth:true});
+      if(!j||!j.access_token){sySave();toast('Подтвердите почту по ссылке из письма, затем нажмите «Войти»');return}
+      setSes(j);
+    }else setSes(await api('/auth/v1/token?grant_type=password',{m:'POST',b:{email,password:pw},noauth:true}));
+    SY.base=null;SY.dirty=false;sySave();closeSheet();await syncNow(true);
+  }catch(e){toast(e.message)}
+}
+function syOut(){SY.ses=null;SY.base=null;SY.dirty=false;sySave();closeSheet();toast('Вы вышли. Данные остались на устройстве')}
+function accountSheet(){
+  if(syOn()){
+    sheet(`<h2>Аккаунт</h2><p>${esc(SY.ses.email)}</p><p class="mute">${esc(syMsg||(SY.dirty?'Есть несинхронизированные изменения':'Подключено'))}</p><div class="row"><button class="btn" onclick="closeSheet();syncNow(true)">Синхронизировать</button></div><div class="row"><button class="btn sec dng" onclick="syOut()">Выйти</button></div>`);
+    return;
+  }
+  sheet(`<h2>Вход в аккаунт</h2><p class="mute">Записи синхронизируются между вашими устройствами через ваш проект Supabase.</p>
+  <label>Адрес проекта<input id="a-url" value="${esc(SY.url)}" placeholder="https://xxxx.supabase.co" autocapitalize="off" autocorrect="off"></label>
+  <label>Публичный ключ (anon или publishable)<input id="a-key" value="${esc(SY.key)}" autocapitalize="off" autocorrect="off"></label>
+  <label>Почта<input id="a-mail" type="email" autocapitalize="off"></label>
+  <label>Пароль<input id="a-pw" type="password"></label>
+  <div class="row"><button class="btn" onclick="syAuth('in')">Войти</button><button class="btn sec" onclick="syAuth('up')">Создать</button></div>`);
+}
+/*END*/
 function delRec(id,b){
   if(delArm!==id){delArm=id;b.textContent='Точно удалить?';return}
   delArm=null;S.recs=S.recs.filter(x=>x.id!==id);save();render();
@@ -425,6 +534,7 @@ function doXl(){
   toast('Добавлено записей: '+n+(skip?', обновлено существующих: '+skip:''));
 }
 render();
+if(syOn()){syncNow();addEventListener('online',()=>syncNow());document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNow()})}
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 </script>
