@@ -132,11 +132,36 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .tg input:checked{background:var(--acc)}
 .tg input:checked::after{left:25px}
 .am b.inc{color:var(--acc)}
+
+@media (min-width:600px){#app{max-width:720px}}
+@media (min-width:820px){
+#app{left:220px;max-width:none;margin:0;padding-bottom:100px}
+body.nonav #app{left:0}
+#app>.bar,#app>.chips,#app>#list,#app>.pad{max-width:820px;margin-left:auto;margin-right:auto}
+#app>.q{max-width:788px;margin-left:auto;margin-right:auto}
+#app>.pad{padding-top:12px}
+#nav{top:0;right:auto;width:220px;flex-direction:column;justify-content:flex-start;gap:4px;padding:24px 12px;border-right:1px solid var(--line)}
+#nav button{flex:none;flex-direction:row;justify-content:flex-start;gap:14px;font-size:16px;padding:12px 14px;border-radius:12px}
+#nav button.on{background:color-mix(in srgb,var(--acc) 16%,transparent)}
+#fab{right:28px;bottom:28px!important}
+.rw{grid-template-columns:62px 120px 1fr auto}
+.rec::after{left:96px}
+#sheet{align-items:center}
+.panel{border-radius:18px;max-height:88%;max-width:520px}
+#sheet.full{display:flex;align-items:flex-start;justify-content:center;background:rgba(10,20,26,.55);padding:24px}
+#sheet.full[hidden]{display:none}
+.page{background:var(--bg);border-radius:20px;overflow:clip;width:100%;min-height:0;margin:auto;padding-bottom:28px}
+}
+@media (hover:hover){
+.sw .rw:hover{background:color-mix(in srgb,var(--ink) 5%,var(--bg))}
+.chip:hover,.ib:hover{filter:brightness(.95)}
+.ib{border-radius:10px}
+}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div id="sheet" hidden onclick="if(event.target===this)closeSheet()"></div>
+<div id="sheet" hidden onclick="if(event.target===this&&!this.classList.contains('full'))closeSheet()"></div>
 <div id="toast" hidden></div>
 <nav id="nav" hidden></nav>
 <button id="fab" aria-label="Добавить" hidden onclick="tab==='rem'?remSheet():recSheet()"></button>
@@ -208,8 +233,8 @@ function listHtml(){swOpen=null;
 }
 function needAuth(){return !syOn()&&!SY.skip&&!!(CFG.url&&CFG.key)}
 function authPage(){
-  $('#nav').hidden=true;$('#fab').hidden=true;
-  $('#app').innerHTML=`<div class="pad"><h1 class="ttl">Журнал ТО</h1><p class="mute">Войдите, чтобы записи были доступны на всех ваших устройствах.</p>
+  $('#nav').hidden=true;$('#fab').hidden=true;document.body.classList.add('nonav');
+  $('#app').innerHTML=`<div class="pad" style="max-width:420px"><h1 class="ttl">Журнал ТО</h1><p class="mute">Войдите, чтобы записи были доступны на всех ваших устройствах.</p>
   <label>Почта<input id="a-mail" type="email" autocomplete="email" autocapitalize="off" autocorrect="off"></label>
   <label>Пароль<input id="a-pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')syAuth('in')"></label>
   <button class="btn" onclick="syAuth('in')">Войти</button>
@@ -220,13 +245,13 @@ function render(){
   if(needAuth()){authPage();return}
   const app=$('#app'),nav=$('#nav'),fab=$('#fab');
   if(!S.cars.length){
-    nav.hidden=true;fab.hidden=true;
-    app.innerHTML=`<div class="pad"><h1 class="ttl">Журнал ТО</h1><p class="mute">Добавьте автомобиль или загрузите данные из Excel или резервной копии.</p><button class="btn" onclick="carSheet()">Добавить автомобиль</button><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Из резервной копии</button></div></div>`;
+    nav.hidden=true;fab.hidden=true;document.body.classList.add('nonav');
+    app.innerHTML=`<div class="pad" style="max-width:420px"><h1 class="ttl">Журнал ТО</h1><p class="mute">Добавьте автомобиль или загрузите данные из Excel или резервной копии.</p><button class="btn" onclick="carSheet()">Добавить автомобиль</button><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Из резервной копии</button></div></div>`;
     return;
   }
   const TT=T.filter(t=>t[0]==='rep'||!(S.tabs&&S.tabs[t[0]]===false));
   if(!TT.some(t=>t[0]===tab))tab='rep';
-  nav.hidden=TT.length<2;fab.hidden=tab==='rpt';fab.style.bottom=TT.length<2?'calc(24px + env(safe-area-inset-bottom,0px))':'';fab.innerHTML=ic('plus',30,'#fff');
+  nav.hidden=TT.length<2;document.body.classList.toggle('nonav',TT.length<2);fab.hidden=tab==='rpt';fab.style.bottom=TT.length<2?'calc(24px + env(safe-area-inset-bottom,0px))':'';fab.innerHTML=ic('plus',30,'#fff');
   nav.innerHTML=TT.map(([k,i,l])=>`<button class="${tab===k?'on':''}" onclick="tab='${k}';openId=null;render()">${ic(i,26)}<span>${l}</span></button>`).join('');
   const sq=showQ&&(tab==='rep'||tab==='doc');
   app.innerHTML=`<div class="bar"><button class="ib" aria-label="Настройки" onclick="settingsSheet()">${ic('cog',26)}</button><h1>Журнал ТО</h1><button class="ib" aria-label="Поиск" onclick="showQ=!showQ;if(!showQ)q='';render();if(showQ)$('#q').focus()">${ic('search',26)}</button><button class="ib" aria-label="Гараж" onclick="garageSheet()">${ic('car',26)}</button><button class="ib" aria-label="Добавить" onclick="$('#fab').click()">${ic('plus',26)}</button></div>
@@ -321,6 +346,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('.del')||!e.target.closest('#list'))return;
   if(Date.now()-swT<400||swOpen){if(swOpen)closeSw();e.stopPropagation();e.preventDefault()}
 },true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet').hidden)closeSheet()});
 function swDel(k,id){
   swOpen=null;
   if(k==='rem'){
@@ -334,7 +360,7 @@ function swDel(k,id){
 }
 /*SYNC*/
 const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU'};
-const VER='10';
+const VER='11';
 const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
