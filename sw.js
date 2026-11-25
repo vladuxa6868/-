@@ -1,4 +1,4 @@
-const V='zhurnal-to-v6';
+const V='zhurnal-to-v7';
 const CORE=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const XLSX='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 self.addEventListener('install',e=>{
@@ -14,10 +14,13 @@ self.addEventListener('fetch',e=>{
   const r=e.request;
   if(r.method!=='GET'||!/^https?:/.test(r.url)||r.headers.has('apikey')||r.headers.has('authorization'))return;
   if(new URL(r.url).origin===self.location.origin){
-    e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>{
-      if(res.ok){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp))}
+    const nav=r.mode==='navigate';
+    e.respondWith(fetch(r.url,{cache:'no-cache',credentials:'same-origin'}).then(async res=>{
+      if(!res.ok)throw new Error('bad');
+      const cp=res.clone();caches.open(V).then(c=>c.put(nav?'index.html':r,cp));
+      if(res.redirected)return new Response(await res.blob(),{status:200,headers:{'Content-Type':res.headers.get('Content-Type')||'text/html'}});
       return res;
-    }).catch(()=>caches.match(r,{ignoreSearch:true}).then(h=>h||caches.match('index.html'))));
+    }).catch(()=>caches.match(nav?'index.html':r,{ignoreSearch:true}).then(h=>h||caches.match('index.html'))));
     return;
   }
   e.respondWith(caches.match(r,{ignoreSearch:true}).then(hit=>{

@@ -135,6 +135,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 <button id="fab" aria-label="Добавить" hidden onclick="tab==='rem'?remSheet():recSheet()"></button>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+window.addEventListener('error',function(e){var a=document.getElementById('app');if(a&&!a.children.length){a.innerHTML='<div style="padding:24px"><h2>Ошибка запуска</h2><p style="color:#888;word-break:break-word"></p><button class="btn" onclick="hardUpdate()">Обновить приложение</button></div>';a.querySelector('p').textContent=String(e.message||e.error)+(e.lineno?' (строка '+e.lineno+')':'')}});
 const K='garage-v1';
 let S=null;
 try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
@@ -197,7 +198,18 @@ function listHtml(){swOpen=null;
   const rs=curRecs().filter(r=>(tab==='doc')===(r.kind==='doc')).filter(r=>!f||(r.title+' '+r.notes+' '+r.parts).toLowerCase().includes(f));
   return rs.length?rs.map(row).join(''):`<p class="mute pad">${f?'Ничего не найдено.':tab==='doc'?'Бумаг пока нет. Нажмите «+», например: ОСАГО.':'Записей пока нет. Нажмите «+» и добавьте первую работу.'}</p>`;
 }
+function needAuth(){return !syOn()&&!SY.skip&&!!(CFG.url&&CFG.key)}
+function authPage(){
+  $('#nav').hidden=true;$('#fab').hidden=true;
+  $('#app').innerHTML=`<div class="pad"><h1 class="ttl">Журнал ТО</h1><p class="mute">Войдите, чтобы записи были доступны на всех ваших устройствах.</p>
+  <label>Почта<input id="a-mail" type="email" autocomplete="email" autocapitalize="off" autocorrect="off"></label>
+  <label>Пароль<input id="a-pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')syAuth('in')"></label>
+  <button class="btn" onclick="syAuth('in')">Войти</button>
+  <div class="row"><button class="btn sec" onclick="syAuth('up')">Создать аккаунт</button></div>
+  <p style="margin-top:14px"><button class="link" onclick="SY.skip=true;sySave();render()">Продолжить без аккаунта</button></p></div>`;
+}
 function render(){
+  if(needAuth()){authPage();return}
   const app=$('#app'),nav=$('#nav'),fab=$('#fab');
   if(!S.cars.length){
     nav.hidden=true;fab.hidden=true;
@@ -308,7 +320,7 @@ function swDel(k,id){
 }
 /*SYNC*/
 const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU'};
-const VER='6';
+const VER='7';
 const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
@@ -399,8 +411,8 @@ async function syAuth(mode){
       if(!j||!j.access_token){sySave();toast('Подтвердите почту по ссылке из письма, затем нажмите «Войти»');return}
       setSes(j);
     }else setSes(await api('/auth/v1/token?grant_type=password',{m:'POST',b:{email,password:pw},noauth:true}));
-    SY.base=null;SY.dirty=false;sySave();closeSheet();await syncNow(true);
-  }catch(e){toast(e.message)}
+    SY.base=null;SY.dirty=false;sySave();closeSheet();await syncNow(true);render();
+  }catch(e){toast(!e.status?'Нет связи с сервером. Проверьте интернет':/Invalid login/i.test(e.message)?'Неверная почта или пароль':/already registered/i.test(e.message)?'Такая почта уже зарегистрирована. Нажмите «Войти»':e.message)}
 }
 async function hardUpdate(){
   try{
@@ -409,7 +421,7 @@ async function hardUpdate(){
   }catch(e){}
   location.reload();
 }
-function syOut(){SY.ses=null;SY.base=null;SY.dirty=false;sySave();closeSheet();toast('Вы вышли. Данные остались на устройстве')}
+function syOut(){SY.ses=null;SY.base=null;SY.dirty=false;SY.skip=true;sySave();closeSheet();render();toast('Вы вышли. Данные остались на устройстве')}
 function accountSheet(){
   if(syOn()){
     sheet(`<h2>Аккаунт</h2><p>${esc(SY.ses.email)}</p><p class="mute">${esc(syMsg||(SY.dirty?'Есть несинхронизированные изменения':'Подключено'))}</p><div class="row"><button class="btn" onclick="closeSheet();syncNow(true)">Синхронизировать</button></div><div class="row"><button class="btn sec dng" onclick="syOut()">Выйти</button></div>`);
