@@ -125,6 +125,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 #app{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:env(safe-area-inset-top,0px) 0 calc(150px + env(safe-area-inset-bottom,0px))}
+.btn:disabled{opacity:.35}
 </style>
 </head>
 <body>
@@ -224,8 +225,11 @@ function render(){
   ${sq?`<input class="q" id="q" placeholder="Поиск по записям" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHtml()">`:''}
   <div id="list">${listHtml()}</div>`;
 }
-function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div><div class="row"><button class="btn sec" onclick="hardUpdate()">Обновить приложение</button></div><p class="mute" style="margin-top:14px">Версия ${VER}. Записи при обновлении не удаляются.</p>`)}
-function garageSheet(){sheet(`<h2>Гараж</h2>${S.cars.map(c=>`<div class="row"><button class="btn sec" onclick="carSheet('${c.id}')">${esc(c.name)}</button></div>`).join('')}<div class="row"><button class="btn" onclick="carSheet()">Добавить автомобиль</button></div>`)}
+function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div><div class="row"><button class="btn sec" onclick="hardUpdate()">Обновить приложение</button></div><div class="row"><button class="btn sec" onclick="snapsSheet()">Автокопии (восстановление)</button></div><p class="mute" style="margin-top:14px">Версия ${VER}. Записи при обновлении не удаляются.</p>`)}
+function garageSheet(){
+  const n=S.cars.length,b='class="btn sec" style="width:52px;padding:0;font-size:20px"';
+  sheet(`<h2>Гараж</h2><p class="mute">Стрелками меняется порядок автомобилей в заголовке. Нажмите на название, чтобы изменить или удалить автомобиль.</p>${S.cars.map((c,i)=>`<div class="row"><button class="btn sec" style="flex:1;width:auto;text-align:left" onclick="carSheet('${c.id}')">${esc(c.name)}</button><button ${b} aria-label="Выше" ${i?'':'disabled'} onclick="moveCar('${c.id}',-1)">↑</button><button ${b} aria-label="Ниже" ${i<n-1?'':'disabled'} onclick="moveCar('${c.id}',1)">↓</button></div>`).join('')}<div class="row"><button class="btn" onclick="carSheet()">Добавить автомобиль</button></div>`);
+}
 function remSheet(){sheet(`<h2>Новое напоминание</h2><label>Что сделать<input id="f-rt" placeholder="Замена масла"></label><div class="two"><label>Дата<input id="f-rd" type="date"></label><label>При пробеге, км<input id="f-rk" type="number" inputmode="numeric"></label></div><p class="mute">Уведомления на телефон страница прислать не может: наступившие напоминания подсвечиваются в списке.</p><div class="row"><button class="btn" onclick="saveRem()">Сохранить</button><button class="btn sec" onclick="closeSheet()">Отмена</button></div>`)}
 function saveRem(){const t=$('#f-rt').value.trim();if(!t){toast('Укажите, что сделать');return}S.rem=S.rem||[];S.rem.push({id:uid(),car:S.cur,title:t,date:$('#f-rd').value,km:$('#f-rk').value});save();closeSheet();render()}
 function delRem(id){S.rem=(S.rem||[]).filter(x=>x.id!==id);save();render()}
@@ -320,7 +324,7 @@ function swDel(k,id){
 }
 /*SYNC*/
 const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU'};
-const VER='7';
+const VER='8';
 const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
@@ -343,14 +347,29 @@ async function ensure(){
   if(Date.now()<SY.ses.exp)return;
   setSes(await api('/auth/v1/token?grant_type=refresh_token',{m:'POST',b:{refresh_token:SY.ses.refresh_token},noauth:true}));
 }
+function snap(why){
+  try{
+    const a=JSON.parse(localStorage.getItem('garage-snaps')||'[]');
+    a.unshift({t:Date.now(),why,n:S.recs.length,d:JSON.stringify(S,(k,v)=>k==='photo'||k==='att'?undefined:v)});
+    while(a.length>8)a.pop();
+    localStorage.setItem('garage-snaps',JSON.stringify(a));
+  }catch(e){}
+}
+const rkey=(r,cars)=>{const c=cars.find(x=>x.id===r.car);return [c?c.name.toLowerCase():r.car,r.title,r.date,r.km,r.cost].join('|')};
 function merge(a,b){
-  const o={cars:[].concat(a.cars),recs:[].concat(a.recs),rem:[].concat(a.rem||[]),cur:a.cur};
-  b.cars.forEach(c=>{if(!o.cars.some(x=>x.id===c.id))o.cars.push(c)});
-  b.recs.forEach(r=>{if(!o.recs.some(x=>x.id===r.id))o.recs.push(r)});
-  (b.rem||[]).forEach(r=>{if(!o.rem.some(x=>x.id===r.id))o.rem.push(r)});
+  const o={cars:[].concat(a.cars),recs:[].concat(a.recs),rem:[].concat(a.rem||[]),cur:a.cur},map={};
+  b.cars.forEach(c=>{const m=o.cars.find(x=>x.id===c.id||x.name.toLowerCase()===c.name.toLowerCase());if(m)map[c.id]=m.id;else{o.cars.push(c);map[c.id]=c.id}});
+  const seen=new Set(o.recs.map(r=>rkey(r,o.cars))),ids=new Set(o.recs.map(r=>r.id));
+  b.recs.forEach(r=>{
+    const x=Object.assign({},r,{car:map[r.car]||r.car}),k=rkey(x,o.cars);
+    if(ids.has(x.id)||seen.has(k))return;
+    ids.add(x.id);seen.add(k);o.recs.push(x);
+  });
+  (b.rem||[]).forEach(r=>{if(!o.rem.some(x=>x.id===r.id))o.rem.push(Object.assign({},r,{car:map[r.car]||r.car}))});
   return o;
 }
 function pull(rem){
+  if(S.recs.length)snap('до загрузки из облака');
   S=rem.data;if(!S.cars)S={cars:[],cur:null,recs:[]};
   if(!S.cars.find(c=>c.id===S.cur))S.cur=S.cars[0]?S.cars[0].id:null;
   syQuiet=true;save();syQuiet=false;
@@ -395,6 +414,7 @@ async function syTake(k){
   try{
     if(k==='cloud')pull(SYR);
     else{
+      snap('до объединения с облаком');
       if(k==='merge'){S=merge(S,SYR.data);syQuiet=true;save();syQuiet=false}
       await push(SYR.updated_at);render();
     }
@@ -454,28 +474,50 @@ function saveCar(){
   save();closeSheet();render();
 }
 function delCar(b){
-  if(delArm!=='car'){delArm='car';b.textContent='Точно удалить? Это нельзя отменить';return}
-  delArm=null;S.recs=S.recs.filter(r=>r.car!==S.cur);S.cars=S.cars.filter(c=>c.id!==S.cur);
+  if(delArm!=='car'){delArm='car';b.textContent='Точно удалить? Копия сохранится в автокопиях';return}
+  snap('до удаления автомобиля');delArm=null;S.recs=S.recs.filter(r=>r.car!==S.cur);S.cars=S.cars.filter(c=>c.id!==S.cur);
   S.cur=S.cars[0]?S.cars[0].id:null;save();closeSheet();render();
 }
 
 function backupSheet(){
-  sheet(`<h2>Резервная копия</h2><p class="mute">Нажмите «Скопировать» и вставьте текст в заметки или сообщение себе. Чтобы восстановить данные, вставьте текст в поле и нажмите «Загрузить». Загрузка заменит текущие записи.</p>
+  sheet(`<h2>Резервная копия</h2><p class="mute">«Скопировать» и вставьте текст в заметки. Чтобы вернуть данные, вставьте текст в поле и выберите: «Добавить к текущим» объединит записи без дублей, «Заменить» полностью подменит ими текущие. Перед загрузкой приложение само сохранит автокопию.</p>
   <textarea id="f-bk" rows="6">${esc(JSON.stringify(S))}</textarea>
-  <div class="row"><button class="btn" onclick="copyBk()">Скопировать</button><button class="btn sec" onclick="loadBk()">Загрузить</button></div>`);
+  <div class="row"><button class="btn" onclick="copyBk()">Скопировать</button></div>
+  <div class="row"><button class="btn sec" onclick="loadBk('merge')">Добавить к текущим</button><button class="btn sec dng" onclick="loadBk('replace')">Заменить</button></div>`);
 }
 function copyBk(){
   const t=$('#f-bk');t.select();
   const ok=()=>toast('Скопировано'),fb=()=>{try{document.execCommand('copy');ok()}catch(e){toast('Выделите текст и скопируйте вручную')}};
   try{navigator.clipboard.writeText(t.value).then(ok,fb)}catch(e){fb()}
 }
-function loadBk(){
+function loadBk(mode){
   try{
     const d=JSON.parse($('#f-bk').value);
     if(!Array.isArray(d.cars)||!Array.isArray(d.recs))throw 0;
-    S=d;if(!S.cars.find(c=>c.id===S.cur))S.cur=S.cars[0]?S.cars[0].id:null;
-    save();closeSheet();render();toast('Данные загружены');
+    snap('до загрузки резервной копии');
+    S=mode==='merge'?merge(S,d):d;
+    if(!S.cars.find(c=>c.id===S.cur))S.cur=S.cars[0]?S.cars[0].id:null;
+    save();closeSheet();render();toast(mode==='merge'?'Записи добавлены':'Данные заменены');
   }catch(e){toast('Текст не похож на резервную копию')}
+}
+function snapsSheet(){
+  let a=[];try{a=JSON.parse(localStorage.getItem('garage-snaps')||'[]')}catch(e){}
+  sheet(`<h2>Автокопии</h2><p class="mute">Перед импортом, загрузкой копии или данных из облака, а также раз в сутки приложение сохраняет копию записей (без фото). При восстановлении фото остаются у тех записей, которые есть сейчас.</p>${a.length?a.map((x,i)=>`<div class="row"><div style="flex:1"><b>${new Date(x.t).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</b><br><span class="mute">${esc(x.why)}, записей: ${x.n}</span></div><button class="btn sec" style="width:130px" onclick="restoreSnap(${i})">Восстановить</button></div>`).join(''):'<p class="mute">Пока нет копий.</p>'}`);
+}
+function restoreSnap(i){
+  let a=[];try{a=JSON.parse(localStorage.getItem('garage-snaps')||'[]')}catch(e){}
+  const x=a[i];if(!x)return;
+  const old=S,ph={};old.recs.forEach(r=>{if(r.photo||r.att)ph[r.id]=r});
+  snap('до восстановления');
+  const d=JSON.parse(x.d);
+  d.recs.forEach(r=>{const o=ph[r.id];if(o){r.photo=o.photo;r.att=o.att}});
+  S=d;if(!S.cars.find(c=>c.id===S.cur))S.cur=S.cars[0]?S.cars[0].id:null;
+  save();closeSheet();render();toast('Восстановлено');
+}
+function moveCar(id,d){
+  const i=S.cars.findIndex(c=>c.id===id),j=i+d;
+  if(i<0||j<0||j>=S.cars.length)return;
+  const t=S.cars[i];S.cars[i]=S.cars[j];S.cars[j]=t;save();render();garageSheet();
 }
 let XL=null;
 const COLS=[['date',/^дата/],['km',/пробег|одометр/],['cost',/^итого|стоим|сумм|^цена/],['title',/то и ремонт|бумаг|назван|описан|услуг|что сделано/],['pc',/^запчаст/],['wc',/^работ/],['parts',/артикул/],['notes',/коммент|заметк|примеч/]];
@@ -537,6 +579,7 @@ function readXl(inp){
   fr.readAsArrayBuffer(f);
 }
 function doXl(){
+  snap('до импорта Excel');
   const by={};S.cars.forEach(c=>by[c.name.toLowerCase()]=c.id);
   let n=0,skip=0,first=null;
   XL.forEach(t=>{
@@ -552,8 +595,12 @@ function doXl(){
   });
   if(first)S.cur=first;
   openId=null;save();closeSheet();render();
-  toast('Добавлено записей: '+n+(skip?', обновлено существующих: '+skip:''));
+  const msg='Добавлено записей: '+n+(skip?', обновлено существующих: '+skip:'');
+  if(!syOn()){toast(msg+'. Войдите в аккаунт, чтобы записи сохранялись в облаке');return}
+  toast(msg+'. Отправляю в облако…');clearTimeout(syT);
+  syncNow().then(()=>{if(SY.dirty)syT=setTimeout(()=>syncNow(),3000);toast(msg+(SY.dirty?'. В облако пока не отправлено, повторю позже':'. Сохранено в облаке'))});
 }
+try{const a=JSON.parse(localStorage.getItem('garage-snaps')||'[]');if(S.recs.length&&(!a[0]||Date.now()-a[0].t>864e5))snap('ежедневная')}catch(e){}
 render();
 if(syOn()){syncNow();addEventListener('online',()=>syncNow());document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNow()})}
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
