@@ -126,6 +126,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 #app{position:fixed;top:0;bottom:0;left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding:env(safe-area-inset-top,0px) 0 calc(150px + env(safe-area-inset-bottom,0px))}
 .btn:disabled{opacity:.35}
+.tg{display:flex;justify-content:space-between;align-items:center;font-size:17px;color:var(--ink);padding:12px 0;margin:0;border-bottom:1px solid var(--line)}
+.tg input{-webkit-appearance:none;appearance:none;width:52px;height:30px;margin:0;padding:0;border:0;border-radius:15px;background:var(--line);position:relative;transition:background .2s;flex:none;cursor:pointer}
+.tg input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s}
+.tg input:checked{background:var(--acc)}
+.tg input:checked::after{left:25px}
 </style>
 </head>
 <body>
@@ -217,15 +222,17 @@ function render(){
     app.innerHTML=`<div class="pad"><h1 class="ttl">Журнал ТО</h1><p class="mute">Добавьте автомобиль или загрузите данные из Excel или резервной копии.</p><button class="btn" onclick="carSheet()">Добавить автомобиль</button><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Из резервной копии</button></div></div>`;
     return;
   }
-  nav.hidden=false;fab.hidden=tab==='rpt';fab.innerHTML=ic('plus',30,'#fff');
-  nav.innerHTML=T.map(([k,i,l])=>`<button class="${tab===k?'on':''}" onclick="tab='${k}';openId=null;render()">${ic(i,26)}<span>${l}</span></button>`).join('');
+  const TT=T.filter(t=>t[0]==='rep'||!(S.tabs&&S.tabs[t[0]]===false));
+  if(!TT.some(t=>t[0]===tab))tab='rep';
+  nav.hidden=TT.length<2;fab.hidden=tab==='rpt';fab.style.bottom=TT.length<2?'calc(24px + env(safe-area-inset-bottom,0px))':'';fab.innerHTML=ic('plus',30,'#fff');
+  nav.innerHTML=TT.map(([k,i,l])=>`<button class="${tab===k?'on':''}" onclick="tab='${k}';openId=null;render()">${ic(i,26)}<span>${l}</span></button>`).join('');
   const sq=showQ&&(tab==='rep'||tab==='doc');
   app.innerHTML=`<div class="bar"><button class="ib" aria-label="Настройки" onclick="settingsSheet()">${ic('cog',26)}</button><h1>Журнал ТО</h1><button class="ib" aria-label="Поиск" onclick="showQ=!showQ;if(!showQ)q='';render();if(showQ)$('#q').focus()">${ic('search',26)}</button><button class="ib" aria-label="Гараж" onclick="garageSheet()">${ic('car',26)}</button><button class="ib" aria-label="Добавить" onclick="$('#fab').click()">${ic('plus',26)}</button></div>
   <div class="chips">${S.cars.map(c=>`<button class="chip${c.id===S.cur?' on':''}" onclick="S.cur='${c.id}';openId=null;save();render()">${esc(c.name)}</button>`).join('')}</div>
   ${sq?`<input class="q" id="q" placeholder="Поиск по записям" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHtml()">`:''}
   <div id="list">${listHtml()}</div>`;
 }
-function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div><div class="row"><button class="btn sec" onclick="hardUpdate()">Обновить приложение</button></div><div class="row"><button class="btn sec" onclick="snapsSheet()">Автокопии (восстановление)</button></div><p class="mute" style="margin-top:14px">Версия ${VER}. Записи при обновлении не удаляются.</p>`)}
+function settingsSheet(){sheet(`<h2>Настройки</h2><div class="row"><button class="btn" onclick="accountSheet()">${syOn()?'Аккаунт: '+esc(SY.ses.email):'Аккаунт и синхронизация'}</button></div><div class="row"><button class="btn sec" onclick="tabsSheet()">Нижнее меню</button></div><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Резервная копия</button></div><div class="row"><button class="btn sec" onclick="hardUpdate()">Обновить приложение</button></div><div class="row"><button class="btn sec" onclick="snapsSheet()">Автокопии (восстановление)</button></div><p class="mute" style="margin-top:14px">Версия ${VER}. Записи при обновлении не удаляются.</p>`)}
 function garageSheet(){
   const n=S.cars.length,b='class="btn sec" style="width:52px;padding:0;font-size:20px"';
   sheet(`<h2>Гараж</h2><p class="mute">Стрелками меняется порядок автомобилей в заголовке. Нажмите на название, чтобы изменить или удалить автомобиль.</p>${S.cars.map((c,i)=>`<div class="row"><button class="btn sec" style="flex:1;width:auto;text-align:left" onclick="carSheet('${c.id}')">${esc(c.name)}</button><button ${b} aria-label="Выше" ${i?'':'disabled'} onclick="moveCar('${c.id}',-1)">↑</button><button ${b} aria-label="Ниже" ${i<n-1?'':'disabled'} onclick="moveCar('${c.id}',1)">↓</button></div>`).join('')}<div class="row"><button class="btn" onclick="carSheet()">Добавить автомобиль</button></div>`);
@@ -324,7 +331,7 @@ function swDel(k,id){
 }
 /*SYNC*/
 const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU'};
-const VER='8';
+const VER='9';
 const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
@@ -514,6 +521,11 @@ function restoreSnap(i){
   S=d;if(!S.cars.find(c=>c.id===S.cur))S.cur=S.cars[0]?S.cars[0].id:null;
   save();closeSheet();render();toast('Восстановлено');
 }
+function tabsSheet(){
+  const on=k=>!(S.tabs&&S.tabs[k]===false);
+  sheet(`<h2>Нижнее меню</h2><p class="mute">Вкладка «ТО и Ремонт» показывается всегда, остальные можно скрыть. Записи и напоминания при этом не удаляются. Если оставить только «ТО и Ремонт», нижнее меню исчезнет.</p>${[['doc','Бумаги'],['rem','Напомнить'],['rpt','Отчеты']].map(([k,l])=>`<label class="tg"><span>${l}</span><input type="checkbox" aria-label="${l}"${on(k)?' checked':''} onchange="setTab('${k}',this.checked)"></label>`).join('')}<div class="row"><button class="btn" onclick="closeSheet()">Готово</button></div>`);
+}
+function setTab(k,v){S.tabs=Object.assign({},S.tabs);S.tabs[k]=v;save();render()}
 function moveCar(id,d){
   const i=S.cars.findIndex(c=>c.id===id),j=i+d;
   if(i<0||j<0||j>=S.cars.length)return;
