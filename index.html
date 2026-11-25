@@ -131,6 +131,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .tg input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s}
 .tg input:checked{background:var(--acc)}
 .tg input:checked::after{left:25px}
+.am b.inc{color:var(--acc)}
 </style>
 </head>
 <body>
@@ -175,19 +176,20 @@ hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 
 const ic=(k,s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
 const T=[['rep','wr','ТО и Ремонт'],['doc','doc','Бумаги'],['rem','bell','Напомнить'],['rpt','chart','Отчеты']];
 const fdt=d=>d.split('-').reverse().join('.');
+const sgn=v=>+v<0?'+'+money(-v):money(v);
 
 function row(r){
   const o=openId===r.id;
   const th=r.photo?`<img class="th" src="${r.photo}" alt="">`:`<span class="th">${ic('wr',34,'#D9531E')}</span>`;
-  const sub=(r.wc?`<span>${ic('hand',15)} ${money(r.wc)}</span>`:'')+(r.pc?`<span>${ic('cog',15)} ${money(r.pc)}</span>`:'');
-  return `<article class="rec"><div class="sw"><button class="del" aria-label="Удалить" onclick="swDel('rec','${r.id}')">${ic('trash',26,'#fff')}</button><div class="rw" data-id="${r.id}" onclick="openId=${o?'null':`'${r.id}'`};render()">${th}<div class="dt"><b>${r.date?fdt(r.date):'без даты'}</b>${r.km?`<i>${num(r.km)} км</i>`:''}</div><div class="tt">${esc(r.title)}</div><div class="am">${r.cost?`<b>${money(r.cost)}</b>`:''}${sub}</div></div></div>`+
+  const sub=(r.wc?`<span>${ic('hand',15)} ${sgn(r.wc)}</span>`:'')+(r.pc?`<span>${ic('cog',15)} ${sgn(r.pc)}</span>`:'');
+  return `<article class="rec"><div class="sw"><button class="del" aria-label="Удалить" onclick="swDel('rec','${r.id}')">${ic('trash',26,'#fff')}</button><div class="rw" data-id="${r.id}" onclick="openId=${o?'null':`'${r.id}'`};render()">${th}<div class="dt"><b>${r.date?fdt(r.date):'без даты'}</b>${r.km?`<i>${num(r.km)} км</i>`:''}</div><div class="tt">${esc(r.title)}</div><div class="am">${r.cost?`<b${+r.cost<0?' class="inc"':''}>${sgn(r.cost)}</b>`:''}${sub}</div></div></div>`+
   (o?`<div class="det">${r.parts?`<p><span>Запчасти</span>${esc(r.parts)}</p>`:''}${r.notes?`<p><span>Комментарий</span>${esc(r.notes)}</p>`:''}${r.photo?`<img src="${r.photo}" alt="Фото">`:''}${r.att?`<img src="${r.att}" alt="Вложение">`:''}<div class="row"><button class="btn sec" onclick="recSheet('${r.id}')">Изменить</button><button class="btn sec dng" onclick="delRec('${r.id}',this)">Удалить</button></div></div>`:'')+`</article>`;
 }
 function report(){
   const by={};
-  S.recs.filter(r=>r.car===S.cur).forEach(r=>{const y=(r.date||'').slice(0,4)||'без даты',o=by[y]||(by[y]={n:0,t:0,p:0,w:0});o.n++;o.t+=+r.cost||0;o.p+=+r.pc||0;o.w+=+r.wc||0});
-  const ys=Object.keys(by).sort().reverse(),mx=Math.max(1,...ys.map(y=>by[y].t)),tot=ys.reduce((a,y)=>a+by[y].t,0);
-  return `<div class="pad"><p class="mute">Всего потрачено</p><h2 class="big">${money(tot)}</h2>`+ys.map(y=>{const o=by[y];return `<div class="yr"><div class="yh"><b>${y}</b><b>${money(o.t)}</b></div><div class="bar2"><i style="width:${Math.round(o.t/mx*100)}%"></i></div><p class="mute">Записей: ${o.n}${o.p?', запчасти '+money(o.p):''}${o.w?', работа '+money(o.w):''}</p></div>`}).join('')+'</div>';
+  S.recs.filter(r=>r.car===S.cur).forEach(r=>{const y=(r.date||'').slice(0,4)||'без даты',o=by[y]||(by[y]={n:0,e:0,i:0,p:0,w:0}),c=+r.cost||0;o.n++;if(c<0)o.i-=c;else o.e+=c;o.p+=+r.pc||0;o.w+=+r.wc||0});
+  const ys=Object.keys(by).sort().reverse(),net=y=>by[y].e-by[y].i,mx=Math.max(1,...ys.map(y=>Math.max(0,net(y)))),E=ys.reduce((a,y)=>a+by[y].e,0),I=ys.reduce((a,y)=>a+by[y].i,0);
+  return `<div class="pad"><p class="mute">Чистые расходы</p><h2 class="big">${sgn(E-I)}</h2><p class="mute" style="margin:-8px 0 16px">Расходы ${money(E)}${I?', доходы '+money(I):''}</p>`+ys.map(y=>{const o=by[y];return `<div class="yr"><div class="yh"><b>${y}</b><b>${sgn(net(y))}</b></div><div class="bar2"><i style="width:${Math.round(Math.max(0,net(y))/mx*100)}%"></i></div><p class="mute">Записей: ${o.n}${o.i?', доходы '+money(o.i):''}${o.p>0?', запчасти '+money(o.p):''}${o.w>0?', работа '+money(o.w):''}</p></div>`}).join('')+'</div>';
 }
 function listHtml(){swOpen=null;
   if(tab==='rpt')return report();
@@ -250,7 +252,7 @@ function recSheet(id){
   const r=S.recs.find(x=>x.id===id)||{date:new Date().toISOString().slice(0,10)};
   const d=id?r.kind==='doc':tab==='doc';
   editKind=d?'doc':'';photoData=r.photo||null;attData=r.att||null;editing=id||null;
-  const man=r.cost&&+r.cost!==(+r.pc||0)+(+r.wc||0)?1:0;
+  const man=r.cost&&+r.cost!==(+r.pc||0)+(+r.wc||0)?1:0,inc=[r.cost,r.pc,r.wc].some(v=>+v<0),ab=v=>v===''||v==null?'':Math.abs(+v);
   const s=$('#sheet');s.className='full';s.hidden=false;
   s.innerHTML=`<div class="page"><div class="fbar"><button class="ib" aria-label="Закрыть" onclick="closeSheet()">${ic('x',28)}</button><h2>${id?'Изменить запись':d?'Добавить бумагу':'Добавить сервис'}</h2><button class="ib" aria-label="Сохранить" onclick="saveRec()">${ic('check',28)}</button></div>
   <div class="fc"><div class="pic" id="f-pic">${photoData?`<img src="${photoData}" alt="">`:ic('wr',60,'#D9531E')}</div>
@@ -258,7 +260,7 @@ function recSheet(id){
   ${mf('f-title',d?'Введите название':'Введите, что было сделано',r.title,'maxlength="70" oninput="cn(this,70)"')}<div class="cnt" id="c-f-title">${String(r.title||'').length}/70</div>
   ${mf('f-km','Пробег',r.km,'type="number" inputmode="numeric"')}
   <div class="mf up"><input id="f-date" type="date" value="${esc(r.date)}"><span>Дата</span></div></div>
-  <div class="fc g"><h3>Стоимость</h3>${mf('f-pc','Запчасти',r.pc,'type="number" inputmode="decimal" oninput="autoSum()"')}${mf('f-wc','Работа',r.wc,'type="number" inputmode="decimal" oninput="autoSum()"')}${mf('f-cost','Итого',r.cost,`type="number" inputmode="decimal" data-m="${man}" oninput="this.dataset.m=this.value?1:0"`)}</div>
+  <div class="fc g"><h3>Стоимость</h3>${mf('f-pc','Запчасти',ab(r.pc),'type="number" inputmode="decimal" oninput="autoSum()"')}${mf('f-wc','Работа',ab(r.wc),'type="number" inputmode="decimal" oninput="autoSum()"')}${mf('f-cost','Итого',ab(r.cost),`type="number" inputmode="decimal" data-m="${man}" oninput="this.dataset.m=this.value?1:0"`)}<label class="tg"><span>Доход (вернул деньги)</span><input type="checkbox" id="f-inc"${inc?' checked':''}></label><p class="mute" style="margin:6px 0 4px">Сумма вычтется из расходов, например при продаже детали. Можно и вписать минус вручную.</p></div>
   <div class="fc n">${ta('f-parts','Артикулы деталей',r.parts,300)}${ta('f-notes','Комментарий',r.notes,1000)}
   <button class="pill l" onclick="$('#f-att-in').click()">Прикрепить…</button><input id="f-att-in" type="file" accept="image/*" hidden onchange="pickPhoto(this,'att')"><img id="f-att" alt="Вложение"${attData?` src="${attData}"`:' hidden'}></div></div>`;
 }
@@ -280,8 +282,9 @@ function pickPhoto(inp,key){
 function saveRec(){
   const t=$('#f-title').value.trim();
   if(!t){toast('Укажите, что было сделано');return}
-  const pc=$('#f-pc').value,wc=$('#f-wc').value;
-  const o={title:t,date:$('#f-date').value,km:$('#f-km').value,pc,wc,cost:$('#f-cost').value||((+pc||0)+(+wc||0))||'',parts:$('#f-parts').value.trim(),notes:$('#f-notes').value.trim(),photo:photoData,att:attData};
+  const inc=$('#f-inc').checked,sv=q=>{const v=$(q).value;return v===''?'':(inc?-Math.abs(+v):+v)};
+  const pc=sv('#f-pc'),wc=sv('#f-wc'),c0=sv('#f-cost');
+  const o={title:t,date:$('#f-date').value,km:$('#f-km').value,pc,wc,cost:c0!==''?c0:((+pc||0)+(+wc||0))||'',parts:$('#f-parts').value.trim(),notes:$('#f-notes').value.trim(),photo:photoData,att:attData};
   if(editing)Object.assign(S.recs.find(x=>x.id===editing),o);
   else{const id=uid();S.recs.push(Object.assign({id,car:S.cur,kind:editKind},o));openId=id}
   save();closeSheet();render();
@@ -331,7 +334,7 @@ function swDel(k,id){
 }
 /*SYNC*/
 const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU'};
-const VER='9';
+const VER='10';
 const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
