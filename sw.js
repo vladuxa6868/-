@@ -1,4 +1,4 @@
-const V='zhurnal-to-v15';
+const V='zhurnal-to-v16';
 const CORE=['./','index.html','legacy.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const XLSX='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 self.addEventListener('install',e=>{
