@@ -18,9 +18,9 @@ if(!ok)go()}catch(e){go()}})();
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Журнал ремонта</title>
 <style>
-:root{--bg:#fff;--fill:#F1F2F5;--card:#F1F2F5;--ink:#0B0C0E;--mute:#7C8791;--line:#E7E9EC;--acc:#2E8BEA;--accink:#fff;--dng:#E5484D;--grn:#2EA043;--bar:rgba(255,255,255,.9);--nav:rgba(255,255,255,.94);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17212B;--fill:#232E3C;--card:#232E3C;--ink:#F4F6F8;--mute:#7D8E9E;--line:#0F1822;--acc:#4A9BE6;--accink:#fff;--dng:#FF7A7A;--grn:#4BCB6B;--bar:rgba(30,42,56,.9);--nav:rgba(30,42,56,.94);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#17212B;--fill:#232E3C;--card:#232E3C;--ink:#F4F6F8;--mute:#7D8E9E;--line:#0F1822;--acc:#4A9BE6;--accink:#fff;--dng:#FF7A7A;--grn:#4BCB6B;--bar:rgba(30,42,56,.9);--nav:rgba(30,42,56,.94);color-scheme:dark}
+:root{--bg:#fff;--sheet:#fff;--fill:#F1F2F5;--card:#F1F2F5;--ink:#0B0C0E;--mute:#7C8791;--line:#E7E9EC;--acc:#2E8BEA;--accink:#fff;--dng:#E5484D;--grn:#2EA043;--bar:rgba(255,255,255,.9);--nav:rgba(255,255,255,.94);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1012;--fill:#202226;--card:#202226;--sheet:#17181B;--ink:#F2F3F5;--mute:#8B9099;--line:#26282D;--acc:#55A3EA;--accink:#fff;--dng:#FF7A7A;--grn:#4BCB6B;--bar:rgba(15,16,18,.88);--nav:rgba(15,16,18,.92);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1012;--fill:#202226;--card:#202226;--sheet:#17181B;--ink:#F2F3F5;--mute:#8B9099;--line:#26282D;--acc:#55A3EA;--accink:#fff;--dng:#FF7A7A;--grn:#4BCB6B;--bar:rgba(15,16,18,.88);--nav:rgba(15,16,18,.92);color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
@@ -103,7 +103,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #sheet{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20;animation:fadeIn .2s}
 #sheet[hidden]{display:none}
 #sheet.closing{animation:fadeOut .2s forwards}
-.panel{position:relative;background:var(--bg);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding:26px 14px calc(18px + env(safe-area-inset-bottom,0px));animation:slideUp .3s cubic-bezier(.2,.9,.25,1)}
+.panel{position:relative;background:var(--sheet);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding:26px 14px calc(18px + env(safe-area-inset-bottom,0px));animation:slideUp .3s cubic-bezier(.2,.9,.25,1)}
 .panel.still{animation:none}
 .panel::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--mute);opacity:.4}
 #sheet.closing .panel{animation:slideDown .22s cubic-bezier(.4,0,1,1) forwards}
@@ -151,7 +151,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .chev{color:var(--mute);font-size:24px;font-style:normal;margin-left:8px}
 .gr{display:flex;align-items:center}
 .gr .mi{flex:1;width:auto}
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:#323B45;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;max-width:calc(100% - 32px);z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.3);animation:toastIn .28s cubic-bezier(.2,.9,.25,1)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:#2A2C31;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;max-width:calc(100% - 32px);z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.3);animation:toastIn .28s cubic-bezier(.2,.9,.25,1)}
 body.nonav #toast{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 #toast[hidden]{display:none}
 #toast .link{color:#7DC0FF;padding:0 0 0 12px}
@@ -213,6 +213,21 @@ body #toast{bottom:24px}
 .chip{padding:12px 11px;font-size:14px}
 .fc{margin:10px 8px 0;padding:14px 12px 10px}
 }
+.vb{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;flex:none;font-style:normal}
+.t-car{background:linear-gradient(135deg,#6AB6F8,#2E86E4)}
+.t-moto{background:linear-gradient(135deg,#FFB65C,#FF7A3D)}
+.t-boat{background:linear-gradient(135deg,#5FD4E8,#2A9FD8)}
+.t-bike{background:linear-gradient(135deg,#82E08A,#38B85A)}
+.t-own{background:linear-gradient(135deg,#C98BEF,#9A63E0)}
+.chip{display:flex;align-items:center}
+.chip .vb{margin-right:8px;opacity:.55;transition:opacity .25s,transform .25s}
+.chip.on .vb{opacity:1;transform:scale(1.08)}
+.vts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:2px 0 14px}
+.vt{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;padding:10px 2px 8px;border:0;border-radius:14px;background:var(--fill);color:var(--mute);font:inherit;font-size:11px;cursor:pointer;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,color .2s}
+.vt span{margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt.on{color:var(--ink);box-shadow:inset 0 0 0 2px var(--acc);transform:scale(1.05)}
+#tnbox{animation:fadeIn .2s}
+#tnbox[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -256,6 +271,7 @@ doc:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2
 bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
 drop:'<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
 menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',dl:'<path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/>',db:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',refresh:'<path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/>',up:'<path d="M12 19V5M5 12l7-7 7 7"/>',down:'<path d="M12 5v14M19 12l-7 7-7-7"/>',
+moto:'<circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5 8.5 10.5h5.5l4.5 6M14 10.5l-1.2-3.5H16M7 10.5h3"/>',boat:'<path d="M3 14h18l-2.2 5.2a1 1 0 0 1-.9.6H6.1a1 1 0 0 1-.9-.6z"/><path d="M7.5 14v-3.5l4.5-3 4 3V14M12 7.5V4"/>',bike:'<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5 9 9.5h6l3.5 7M9 9.5l2.5 7 3.5-7M7.5 7h3M15 9.5l-1.2-3h2.4"/>',star:'<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.8 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
 chart:'<path d="M3 3v18h18M7 15l4-4 3 3 5-6"/>',
 x:'<path d="M18 6 6 18M6 6l12 12"/>',trash:'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',check:'<path d="M20 6 9 17l-5-5"/>',
 hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>'};
@@ -274,6 +290,10 @@ function moveInd(){
   ind.style.left=l+'px';ind.style.width=w+'px';indPrev={l,w};
   c.scrollLeft=Math.max(0,l-(c.clientWidth-w)/2);
 }
+const VT=[['car','Авто','car'],['moto','Мотоцикл','moto'],['boat','Катер','boat'],['bike','Велосипед','bike'],['own','Своё','star']];
+const vtOf=c=>VT.find(t=>t[0]===(c.type||'car'))||VT[0];
+const vtName=c=>c.type==='own'&&c.tn?c.tn:vtOf(c)[1];
+const vb=(c,s,i)=>`<i class="vb t-${vtOf(c)[0]}" style="width:${s}px;height:${s}px">${ic(vtOf(c)[2],i,'#fff')}</i>`;
 function row(r,i){
   const o=openId===r.id,ty=r.kind==='doc'?'doc':r.oil?'oil':(+r.cost<0?'inc':'rep');
   const th=r.photo?`<img class="av" src="${r.photo}" alt="">`:`<span class="av g-${ty}">${ic(ty==='oil'?'drop':ty==='doc'?'doc':ty==='inc'?'plus':'wr',26,'#fff')}</span>`;
@@ -334,7 +354,7 @@ function render(){
   const app=$('#app'),nav=$('#nav'),fab=$('#fab');
   if(!S.cars.length){
     nav.hidden=true;fab.hidden=true;document.body.classList.add('nonav');
-    app.innerHTML=`<div class="pad" style="max-width:420px"><h1 class="ttl">Журнал ТО</h1><p class="mute">Добавьте автомобиль или загрузите данные из Excel или резервной копии.</p><button class="btn" onclick="carSheet()">Добавить автомобиль</button><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Из резервной копии</button></div></div>`;
+    app.innerHTML=`<div class="pad" style="max-width:420px"><h1 class="ttl">Журнал ТО</h1><p class="mute">Добавьте транспорт или загрузите данные из Excel или резервной копии.</p><button class="btn" onclick="carSheet()">Добавить транспорт</button><div class="row"><button class="btn sec" onclick="xlSheet()">Импорт из Excel</button></div><div class="row"><button class="btn sec" onclick="backupSheet()">Из резервной копии</button></div></div>`;
     return;
   }
   const due=remDue();
@@ -345,7 +365,7 @@ function render(){
   nav.innerHTML=TT.map(([k,i,l])=>`<button class="${tab===k?'on':''}${tab===k&&tabChanged?' pop':''}" onclick="tab='${k}';openId=null;render()">${ic(i,26)}${k==='rem'&&due?`<i class="dot">${due}</i>`:''}<span>${l}</span></button>`).join('');
   const sq=showQ&&(tab==='rep'||tab==='doc');
   app.innerHTML=`<div class="hd"><div class="bar"><button class="ib" aria-label="Меню" onclick="settingsSheet()">${ic('menu',24)}</button><h1>Журнал ТО</h1><button class="ib" aria-label="Поиск" onclick="showQ=!showQ;if(!showQ)q='';render();if(showQ)$('#q').focus()">${ic('search',24)}</button><button class="ib" aria-label="Гараж" onclick="garageSheet()">${ic('car',24)}</button></div>
-  <div class="chips" id="chips">${S.cars.map(c=>`<button class="chip${c.id===S.cur?' on':''}" onclick="S.cur='${c.id}';openId=null;save();render()">${esc(c.name)}</button>`).join('')}<i class="ind" id="ind"></i></div>
+  <div class="chips" id="chips">${S.cars.map(c=>`<button class="chip${c.id===S.cur?' on':''}" onclick="S.cur='${c.id}';openId=null;save();render()">${vb(c,22,13)}<span>${esc(c.name)}</span></button>`).join('')}<i class="ind" id="ind"></i></div>
   ${sq?`<input class="q" id="q" placeholder="Поиск по записям" value="${esc(q)}" oninput="q=this.value;$('#list').innerHTML=listHtml()">`:''}</div>
   <div id="list"${changed?' class="enter"':''}>${listHtml()}</div>`;
   lastKey=key;lastTab=tab;moveInd();
@@ -355,7 +375,7 @@ function render(){
 function settingsSheet(){sheet(`<h2>Настройки</h2><div class="mlist">${mi('user','#3E9BF3',syOn()?esc(SY.ses.email):'Аккаунт и синхронизация','accountSheet()',syOn()?'Синхронизация включена':'Войти или создать аккаунт')}${mi('menu','#F29C3E','Нижнее меню','tabsSheet()')}${mi('dl','#4CC66A','Импорт из Excel','xlSheet()')}${mi('db','#8E7BEF','Резервная копия','backupSheet()')}${mi('clock','#3FC1C9','Автокопии','snapsSheet()','Вернуть прежнюю версию записей')}${mi('refresh','#F0605D','Обновить приложение','hardUpdate()')}</div><p class="mute" style="margin:14px 4px 0">Версия ${VER}. Записи при обновлении не удаляются.</p>`)}
 function garageSheet(){
   const n=S.cars.length;
-  sheet(`<h2>Гараж</h2><p class="mute" style="margin:-6px 4px 8px">Стрелками меняется порядок вкладок. Нажмите на название, чтобы изменить или удалить автомобиль.</p><div class="mlist">${S.cars.map((c,i)=>`<div class="gr"><button class="mi" onclick="carSheet('${c.id}')"><span class="mic av2" style="background:${avc(c.name)}">${esc((c.name.trim()[0]||'?').toUpperCase())}</span><span class="mt">${esc(c.name)}</span></button><button class="ib" aria-label="Выше" ${i?'':'disabled'} onclick="moveCar('${c.id}',-1)">${ic('up',20)}</button><button class="ib" aria-label="Ниже" ${i<n-1?'':'disabled'} onclick="moveCar('${c.id}',1)">${ic('down',20)}</button></div>`).join('')}</div><div class="row"><button class="btn" onclick="carSheet()">Добавить автомобиль</button></div>`);
+  sheet(`<h2>Гараж</h2><p class="mute" style="margin:-6px 4px 8px">Стрелками меняется порядок вкладок. Нажмите на название, чтобы изменить или удалить.</p><div class="mlist">${S.cars.map((c,i)=>`<div class="gr"><button class="mi" onclick="carSheet('${c.id}')"><span class="mic av2" style="background:${avc(c.name)}">${esc((c.name.trim()[0]||'?').toUpperCase())}</span><span class="mt">${esc(c.name)}<small>${esc(vtName(c))}</small></span></button><button class="ib" aria-label="Выше" ${i?'':'disabled'} onclick="moveCar('${c.id}',-1)">${ic('up',20)}</button><button class="ib" aria-label="Ниже" ${i<n-1?'':'disabled'} onclick="moveCar('${c.id}',1)">${ic('down',20)}</button></div>`).join('')}</div><div class="row"><button class="btn" onclick="carSheet()">Добавить транспорт</button></div>`);
 }
 function remSheet(){sheet(`<h2>Новое напоминание</h2><label>Что сделать<input id="f-rt" placeholder="Замена масла"></label><div class="two"><label>Дата<input id="f-rd" type="date"></label><label>При пробеге, км<input id="f-rk" type="number" inputmode="numeric"></label></div><p class="mute">Уведомления на телефон страница прислать не может: наступившие напоминания подсвечиваются в списке.</p><div class="row"><button class="btn" onclick="saveRem()">Сохранить</button><button class="btn sec" onclick="closeSheet()">Отмена</button></div>`)}
 function saveRem(){const t=$('#f-rt').value.trim();if(!t){toast('Укажите, что сделать');return}S.rem=S.rem||[];S.rem.push({id:uid(),car:S.cur,title:t,date:$('#f-rd').value,km:$('#f-rk').value});save();closeSheet();render()}
@@ -517,7 +537,7 @@ function swDel(k,id){
 }
 /*SYNC*/
 const CFG={url:'https://gzgkmjzrnzjlilmpguja.supabase.co',key:'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU'};
-const VER='16';
+const VER='17';
 const nu=u=>String(u||'').trim().replace(/\/(rest|auth)\/v1.*$/,'').replace(/\/+$/,'');
 let SY=null;try{SY=JSON.parse(localStorage.getItem('garage-sync'))}catch(e){}
 SY=SY||{url:'',key:'',ses:null,base:null,dirty:false};
@@ -653,17 +673,31 @@ function delRec(id,b){
   delArm=null;S.recs=S.recs.filter(x=>x.id!==id);save();render();
 }
 
+let carType='car';
+function pickType(t){
+  carType=t;
+  Array.prototype.forEach.call(document.querySelectorAll('.vt'),b=>{b.classList[b.getAttribute('data-t')===t?'add':'remove']('on')});
+  $('#tnbox').hidden=t!=='own';
+  const ph={car:'Kia Rio 2018',moto:'Honda CB500',boat:'Yamaha 242',bike:'Trek Marlin',own:'Название'};
+  $('#f-car').placeholder=ph[t]||'';
+  if(t==='own')setTimeout(()=>{const x=$('#f-tn');if(x)x.focus()},60);
+}
 function carSheet(id){
-  const c=S.cars.find(x=>x.id===id)||{name:''};editing=id||null;
-  sheet(`<h2>${id?'Автомобиль':'Новый автомобиль'}</h2><label>Название<input id="f-car" value="${esc(c.name)}" placeholder="Kia Rio 2018"></label>
+  const c=S.cars.find(x=>x.id===id)||{name:''};editing=id||null;carType=c.type||'car';
+  sheet(`<h2>${id?'Транспорт':'Новый транспорт'}</h2>
+  <div class="vts">${VT.map(t=>`<button class="vt${t[0]===carType?' on':''}" data-t="${t[0]}" onclick="pickType('${t[0]}')">${vb({type:t[0]},44,24)}<span>${t[1]}</span></button>`).join('')}</div>
+  <div id="tnbox"${carType==='own'?'':' hidden'}><label>Название вида транспорта<input id="f-tn" value="${esc(c.tn)}" placeholder="Например, Квадроцикл" maxlength="30"></label></div>
+  <label>Название<input id="f-car" value="${esc(c.name)}" placeholder="Kia Rio 2018"></label>
   <div class="row"><button class="btn" onclick="saveCar()">Сохранить</button><button class="btn sec" onclick="closeSheet()">Отмена</button></div>
-  ${id?`<div class="row"><button class="btn sec dng" onclick="delCar(this)">Удалить авто и все записи</button></div>`:''}`);
+  ${id?`<div class="row"><button class="btn sec dng" onclick="delCar(this)">Удалить и все записи</button></div>`:''}`);
 }
 function saveCar(){
   const n=$('#f-car').value.trim();
-  if(!n){toast('Введите название автомобиля');return}
-  if(editing)S.cars.find(x=>x.id===editing).name=n;
-  else{const id=uid();S.cars.push({id,name:n});S.cur=id}
+  if(!n){toast('Введите название');return}
+  const tn=carType==='own'?$('#f-tn').value.trim():'';
+  if(carType==='own'&&!tn){toast('Назовите вид транспорта');return}
+  if(editing){const c=S.cars.find(x=>x.id===editing);c.name=n;c.type=carType;c.tn=tn}
+  else{const id=uid();S.cars.push({id,name:n,type:carType,tn});S.cur=id}
   save();closeSheet();render();
 }
 function delCar(b){

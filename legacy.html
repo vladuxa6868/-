@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Журнал ремонта</title>
 <style>
-:root{--bg:#fff;--fill:#F1F2F5;--card:#F1F2F5;--ink:#0B0C0E;--mute:#7C8791;--line:#E7E9EC;--acc:#2E8BEA;--accink:#fff;--dng:#E5484D;--grn:#2EA043;--bar:rgba(255,255,255,.9);--nav:rgba(255,255,255,.94);color-scheme:light;box-sizing:border-box;padding-top:0px;padding-bottom:0px}
+:root{--bg:#fff;--sheet:#fff;--fill:#F1F2F5;--card:#F1F2F5;--ink:#0B0C0E;--mute:#7C8791;--line:#E7E9EC;--acc:#2E8BEA;--accink:#fff;--dng:#E5484D;--grn:#2EA043;--bar:rgba(255,255,255,.9);--nav:rgba(255,255,255,.94);color-scheme:light;box-sizing:border-box;padding-top:0px;padding-bottom:0px}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-padding-top:0px}
@@ -144,7 +144,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .chev{color:#7C8791;font-size:24px;font-style:normal;margin-left:8px}
 .gr{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
 .gr .mi{-webkit-flex:1;flex:1;width:auto}
-#toast{position:fixed;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);bottom:calc(92px + 0px);background:#323B45;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;max-width:calc(100% - 32px);z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.3);animation:toastIn .28s cubic-bezier(.2,.9,.25,1)}
+#toast{position:fixed;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);bottom:calc(92px + 0px);background:#2A2C31;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;max-width:calc(100% - 32px);z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.3);animation:toastIn .28s cubic-bezier(.2,.9,.25,1)}
 body.nonav #toast{bottom:calc(24px + 0px)}
 #toast[hidden]{display:none}
 #toast .link{color:#7DC0FF;padding:0 0 0 12px}
@@ -181,6 +181,21 @@ body.nonav #toast{bottom:calc(24px + 0px)}
 .chip{padding:12px 11px;font-size:14px}
 .fc{margin:10px 8px 0;padding:14px 12px 10px}
 }
+.vb{display:inline-flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;border-radius:50%;-webkit-flex:none;flex:none;font-style:normal}
+.t-car{background:linear-gradient(135deg,#6AB6F8,#2E86E4)}
+.t-moto{background:linear-gradient(135deg,#FFB65C,#FF7A3D)}
+.t-boat{background:linear-gradient(135deg,#5FD4E8,#2A9FD8)}
+.t-bike{background:linear-gradient(135deg,#82E08A,#38B85A)}
+.t-own{background:linear-gradient(135deg,#C98BEF,#9A63E0)}
+.chip{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.chip .vb{margin-right:8px;opacity:.55;-webkit-transition:opacity .25s,-webkit-transform .25s;transition:opacity .25s,transform .25s}
+.chip.on .vb{opacity:1;-webkit-transform:scale(1.08);transform:scale(1.08)}
+.vts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:2px 0 14px}
+.vt{position:relative;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;min-width:0;padding:10px 2px 8px;border:0;border-radius:14px;background:#F1F2F5;color:#7C8791;font:inherit;font-size:11px;cursor:pointer;-webkit-transition:-webkit-transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,color .2s;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,color .2s}
+.vt span{margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt.on{color:#0B0C0E;box-shadow:inset 0 0 0 2px #2E8BEA;-webkit-transform:scale(1.05);transform:scale(1.05)}
+#tnbox{animation:fadeIn .2s}
+#tnbox[hidden]{display:none}
 
 .rw{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;padding:12px 12px}
 .rw>*{margin-right:10px}
@@ -388,6 +403,7 @@ var I = {
     bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
     drop: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', dl: '<path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/>', db: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>', clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', refresh: '<path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/>', up: '<path d="M12 19V5M5 12l7-7 7 7"/>', down: '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+    moto: '<circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5 8.5 10.5h5.5l4.5 6M14 10.5l-1.2-3.5H16M7 10.5h3"/>', boat: '<path d="M3 14h18l-2.2 5.2a1 1 0 0 1-.9.6H6.1a1 1 0 0 1-.9-.6z"/><path d="M7.5 14v-3.5l4.5-3 4 3V14M12 7.5V4"/>', bike: '<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5 9 9.5h6l3.5 7M9 9.5l2.5 7 3.5-7M7.5 7h3M15 9.5l-1.2-3h2.4"/>', star: '<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.8 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
     chart: '<path d="M3 3v18h18M7 15l4-4 3 3 5-6"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>', trash: '<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>', check: '<path d="M20 6 9 17l-5-5"/>',
     hand: '<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>'
@@ -415,6 +431,10 @@ function moveInd() {
     indPrev = { l: l, w: w };
     c.scrollLeft = Math.max(0, l - (c.clientWidth - w) / 2);
 }
+var VT = [['car', 'Авто', 'car'], ['moto', 'Мотоцикл', 'moto'], ['boat', 'Катер', 'boat'], ['bike', 'Велосипед', 'bike'], ['own', 'Своё', 'star']];
+var vtOf = function (c) { return VT.find(function (t) { return t[0] === (c.type || 'car'); }) || VT[0]; };
+var vtName = function (c) { return c.type === 'own' && c.tn ? c.tn : vtOf(c)[1]; };
+var vb = function (c, s, i) { return "<i class=\"vb t-".concat(vtOf(c)[0], "\" style=\"width:").concat(s, "px;height:").concat(s, "px\">").concat(ic(vtOf(c)[2], i, '#fff'), "</i>"); };
 function row(r, i) {
     var o = openId === r.id, ty = r.kind === 'doc' ? 'doc' : r.oil ? 'oil' : (+r.cost < 0 ? 'inc' : 'rep');
     var th = r.photo ? "<img class=\"av\" src=\"".concat(r.photo, "\" alt=\"\">") : "<span class=\"av g-".concat(ty, "\">").concat(ic(ty === 'oil' ? 'drop' : ty === 'doc' ? 'doc' : ty === 'inc' ? 'plus' : 'wr', 26, '#fff'), "</span>");
@@ -488,7 +508,7 @@ function render() {
         nav.hidden = true;
         fab.hidden = true;
         document.body.classList.add('nonav');
-        app.innerHTML = "<div class=\"pad\" style=\"max-width:420px\"><h1 class=\"ttl\">\u0416\u0443\u0440\u043D\u0430\u043B \u0422\u041E</h1><p class=\"mute\">\u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C \u0438\u043B\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0438\u0437 Excel \u0438\u043B\u0438 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438.</p><button class=\"btn\" onclick=\"carSheet()\">\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C</button><div class=\"row\"><button class=\"btn sec\" onclick=\"xlSheet()\">\u0418\u043C\u043F\u043E\u0440\u0442 \u0438\u0437 Excel</button></div><div class=\"row\"><button class=\"btn sec\" onclick=\"backupSheet()\">\u0418\u0437 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438</button></div></div>";
+        app.innerHTML = "<div class=\"pad\" style=\"max-width:420px\"><h1 class=\"ttl\">\u0416\u0443\u0440\u043D\u0430\u043B \u0422\u041E</h1><p class=\"mute\">\u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u0442\u0440\u0430\u043D\u0441\u043F\u043E\u0440\u0442 \u0438\u043B\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0438\u0437 Excel \u0438\u043B\u0438 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438.</p><button class=\"btn\" onclick=\"carSheet()\">\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0442\u0440\u0430\u043D\u0441\u043F\u043E\u0440\u0442</button><div class=\"row\"><button class=\"btn sec\" onclick=\"xlSheet()\">\u0418\u043C\u043F\u043E\u0440\u0442 \u0438\u0437 Excel</button></div><div class=\"row\"><button class=\"btn sec\" onclick=\"backupSheet()\">\u0418\u0437 \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u043E\u0439 \u043A\u043E\u043F\u0438\u0438</button></div></div>";
         return;
     }
     var due = remDue();
@@ -506,7 +526,7 @@ function render() {
         return "<button class=\"".concat(tab === k ? 'on' : '').concat(tab === k && tabChanged ? ' pop' : '', "\" onclick=\"tab='").concat(k, "';openId=null;render()\">").concat(ic(i, 26)).concat(k === 'rem' && due ? "<i class=\"dot\">".concat(due, "</i>") : '', "<span>").concat(l, "</span></button>");
     }).join('');
     var sq = showQ && (tab === 'rep' || tab === 'doc');
-    app.innerHTML = "<div class=\"hd\"><div class=\"bar\"><button class=\"ib\" aria-label=\"\u041C\u0435\u043D\u044E\" onclick=\"settingsSheet()\">".concat(ic('menu', 24), "</button><h1>\u0416\u0443\u0440\u043D\u0430\u043B \u0422\u041E</h1><button class=\"ib\" aria-label=\"\u041F\u043E\u0438\u0441\u043A\" onclick=\"showQ=!showQ;if(!showQ)q='';render();if(showQ)$('#q').focus()\">").concat(ic('search', 24), "</button><button class=\"ib\" aria-label=\"\u0413\u0430\u0440\u0430\u0436\" onclick=\"garageSheet()\">").concat(ic('car', 24), "</button></div>\n  <div class=\"chips\" id=\"chips\">").concat(S.cars.map(function (c) { return "<button class=\"chip".concat(c.id === S.cur ? ' on' : '', "\" onclick=\"S.cur='").concat(c.id, "';openId=null;save();render()\">").concat(esc(c.name), "</button>"); }).join(''), "<i class=\"ind\" id=\"ind\"></i></div>\n  ").concat(sq ? "<input class=\"q\" id=\"q\" placeholder=\"\u041F\u043E\u0438\u0441\u043A \u043F\u043E \u0437\u0430\u043F\u0438\u0441\u044F\u043C\" value=\"".concat(esc(q), "\" oninput=\"q=this.value;$('#list').innerHTML=listHtml()\">") : '', "</div>\n  <div id=\"list\"").concat(changed ? ' class="enter"' : '', ">").concat(listHtml(), "</div>");
+    app.innerHTML = "<div class=\"hd\"><div class=\"bar\"><button class=\"ib\" aria-label=\"\u041C\u0435\u043D\u044E\" onclick=\"settingsSheet()\">".concat(ic('menu', 24), "</button><h1>\u0416\u0443\u0440\u043D\u0430\u043B \u0422\u041E</h1><button class=\"ib\" aria-label=\"\u041F\u043E\u0438\u0441\u043A\" onclick=\"showQ=!showQ;if(!showQ)q='';render();if(showQ)$('#q').focus()\">").concat(ic('search', 24), "</button><button class=\"ib\" aria-label=\"\u0413\u0430\u0440\u0430\u0436\" onclick=\"garageSheet()\">").concat(ic('car', 24), "</button></div>\n  <div class=\"chips\" id=\"chips\">").concat(S.cars.map(function (c) { return "<button class=\"chip".concat(c.id === S.cur ? ' on' : '', "\" onclick=\"S.cur='").concat(c.id, "';openId=null;save();render()\">").concat(vb(c, 22, 13), "<span>").concat(esc(c.name), "</span></button>"); }).join(''), "<i class=\"ind\" id=\"ind\"></i></div>\n  ").concat(sq ? "<input class=\"q\" id=\"q\" placeholder=\"\u041F\u043E\u0438\u0441\u043A \u043F\u043E \u0437\u0430\u043F\u0438\u0441\u044F\u043C\" value=\"".concat(esc(q), "\" oninput=\"q=this.value;$('#list').innerHTML=listHtml()\">") : '', "</div>\n  <div id=\"list\"").concat(changed ? ' class="enter"' : '', ">").concat(listHtml(), "</div>");
     lastKey = key;
     lastTab = tab;
     moveInd();
@@ -521,7 +541,7 @@ function render() {
 function settingsSheet() { sheet("<h2>\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438</h2><div class=\"mlist\">".concat(mi('user', '#3E9BF3', syOn() ? esc(SY.ses.email) : 'Аккаунт и синхронизация', 'accountSheet()', syOn() ? 'Синхронизация включена' : 'Войти или создать аккаунт')).concat(mi('menu', '#F29C3E', 'Нижнее меню', 'tabsSheet()')).concat(mi('dl', '#4CC66A', 'Импорт из Excel', 'xlSheet()')).concat(mi('db', '#8E7BEF', 'Резервная копия', 'backupSheet()')).concat(mi('clock', '#3FC1C9', 'Автокопии', 'snapsSheet()', 'Вернуть прежнюю версию записей')).concat(mi('refresh', '#F0605D', 'Обновить приложение', 'hardUpdate()'), "</div><p class=\"mute\" style=\"margin:14px 4px 0\">\u0412\u0435\u0440\u0441\u0438\u044F ").concat(VER, ". \u0417\u0430\u043F\u0438\u0441\u0438 \u043F\u0440\u0438 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0438 \u043D\u0435 \u0443\u0434\u0430\u043B\u044F\u044E\u0442\u0441\u044F.</p>")); }
 function garageSheet() {
     var n = S.cars.length;
-    sheet("<h2>\u0413\u0430\u0440\u0430\u0436</h2><p class=\"mute\" style=\"margin:-6px 4px 8px\">\u0421\u0442\u0440\u0435\u043B\u043A\u0430\u043C\u0438 \u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u043F\u043E\u0440\u044F\u0434\u043E\u043A \u0432\u043A\u043B\u0430\u0434\u043E\u043A. \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043D\u0430 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435, \u0447\u0442\u043E\u0431\u044B \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0438\u043B\u0438 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C.</p><div class=\"mlist\">".concat(S.cars.map(function (c, i) { return "<div class=\"gr\"><button class=\"mi\" onclick=\"carSheet('".concat(c.id, "')\"><span class=\"mic av2\" style=\"background:").concat(avc(c.name), "\">").concat(esc((c.name.trim()[0] || '?').toUpperCase()), "</span><span class=\"mt\">").concat(esc(c.name), "</span></button><button class=\"ib\" aria-label=\"\u0412\u044B\u0448\u0435\" ").concat(i ? '' : 'disabled', " onclick=\"moveCar('").concat(c.id, "',-1)\">").concat(ic('up', 20), "</button><button class=\"ib\" aria-label=\"\u041D\u0438\u0436\u0435\" ").concat(i < n - 1 ? '' : 'disabled', " onclick=\"moveCar('").concat(c.id, "',1)\">").concat(ic('down', 20), "</button></div>"); }).join(''), "</div><div class=\"row\"><button class=\"btn\" onclick=\"carSheet()\">\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C</button></div>"));
+    sheet("<h2>\u0413\u0430\u0440\u0430\u0436</h2><p class=\"mute\" style=\"margin:-6px 4px 8px\">\u0421\u0442\u0440\u0435\u043B\u043A\u0430\u043C\u0438 \u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u043F\u043E\u0440\u044F\u0434\u043E\u043A \u0432\u043A\u043B\u0430\u0434\u043E\u043A. \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043D\u0430 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435, \u0447\u0442\u043E\u0431\u044B \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0438\u043B\u0438 \u0443\u0434\u0430\u043B\u0438\u0442\u044C.</p><div class=\"mlist\">".concat(S.cars.map(function (c, i) { return "<div class=\"gr\"><button class=\"mi\" onclick=\"carSheet('".concat(c.id, "')\"><span class=\"mic av2\" style=\"background:").concat(avc(c.name), "\">").concat(esc((c.name.trim()[0] || '?').toUpperCase()), "</span><span class=\"mt\">").concat(esc(c.name), "<small>").concat(esc(vtName(c)), "</small></span></button><button class=\"ib\" aria-label=\"\u0412\u044B\u0448\u0435\" ").concat(i ? '' : 'disabled', " onclick=\"moveCar('").concat(c.id, "',-1)\">").concat(ic('up', 20), "</button><button class=\"ib\" aria-label=\"\u041D\u0438\u0436\u0435\" ").concat(i < n - 1 ? '' : 'disabled', " onclick=\"moveCar('").concat(c.id, "',1)\">").concat(ic('down', 20), "</button></div>"); }).join(''), "</div><div class=\"row\"><button class=\"btn\" onclick=\"carSheet()\">\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0442\u0440\u0430\u043D\u0441\u043F\u043E\u0440\u0442</button></div>"));
 }
 function remSheet() { sheet("<h2>\u041D\u043E\u0432\u043E\u0435 \u043D\u0430\u043F\u043E\u043C\u0438\u043D\u0430\u043D\u0438\u0435</h2><label>\u0427\u0442\u043E \u0441\u0434\u0435\u043B\u0430\u0442\u044C<input id=\"f-rt\" placeholder=\"\u0417\u0430\u043C\u0435\u043D\u0430 \u043C\u0430\u0441\u043B\u0430\"></label><div class=\"two\"><label>\u0414\u0430\u0442\u0430<input id=\"f-rd\" type=\"date\"></label><label>\u041F\u0440\u0438 \u043F\u0440\u043E\u0431\u0435\u0433\u0435, \u043A\u043C<input id=\"f-rk\" type=\"number\" inputmode=\"numeric\"></label></div><p class=\"mute\">\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F \u043D\u0430 \u0442\u0435\u043B\u0435\u0444\u043E\u043D \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0430 \u043F\u0440\u0438\u0441\u043B\u0430\u0442\u044C \u043D\u0435 \u043C\u043E\u0436\u0435\u0442: \u043D\u0430\u0441\u0442\u0443\u043F\u0438\u0432\u0448\u0438\u0435 \u043D\u0430\u043F\u043E\u043C\u0438\u043D\u0430\u043D\u0438\u044F \u043F\u043E\u0434\u0441\u0432\u0435\u0447\u0438\u0432\u0430\u044E\u0442\u0441\u044F \u0432 \u0441\u043F\u0438\u0441\u043A\u0435.</p><div class=\"row\"><button class=\"btn\" onclick=\"saveRem()\">\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C</button><button class=\"btn sec\" onclick=\"closeSheet()\">\u041E\u0442\u043C\u0435\u043D\u0430</button></div>"); }
 function saveRem() { var t = $('#f-rt').value.trim(); if (!t) {
@@ -789,7 +809,7 @@ function swDel(k, id) {
     toast('Запись удалена', function () { S.recs.splice(Math.min(i, S.recs.length), 0, it); save(); render(); });
 }
 var CFG = { url: 'https://gzgkmjzrnzjlilmpguja.supabase.co', key: 'sb_publishable_6g_EL6E9ok_p2SVsnbwgog_aRgc5hyU' };
-var VER = '16';
+var VER = '17';
 var nu = function (u) { return String(u || '').trim().replace(/\/(rest|auth)\/v1.*$/, '').replace(/\/+$/, ''); };
 var SY = null;
 try {
@@ -1163,22 +1183,43 @@ function delRec(id, b) {
     save();
     render();
 }
+var carType = 'car';
+function pickType(t) {
+    carType = t;
+    Array.prototype.forEach.call(document.querySelectorAll('.vt'), function (b) { b.classList[b.getAttribute('data-t') === t ? 'add' : 'remove']('on'); });
+    $('#tnbox').hidden = t !== 'own';
+    var ph = { car: 'Kia Rio 2018', moto: 'Honda CB500', boat: 'Yamaha 242', bike: 'Trek Marlin', own: 'Название' };
+    $('#f-car').placeholder = ph[t] || '';
+    if (t === 'own')
+        setTimeout(function () { var x = $('#f-tn'); if (x)
+            x.focus(); }, 60);
+}
 function carSheet(id) {
     var c = S.cars.find(function (x) { return x.id === id; }) || { name: '' };
     editing = id || null;
-    sheet("<h2>".concat(id ? 'Автомобиль' : 'Новый автомобиль', "</h2><label>\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435<input id=\"f-car\" value=\"").concat(esc(c.name), "\" placeholder=\"Kia Rio 2018\"></label>\n  <div class=\"row\"><button class=\"btn\" onclick=\"saveCar()\">\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C</button><button class=\"btn sec\" onclick=\"closeSheet()\">\u041E\u0442\u043C\u0435\u043D\u0430</button></div>\n  ").concat(id ? "<div class=\"row\"><button class=\"btn sec dng\" onclick=\"delCar(this)\">\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0430\u0432\u0442\u043E \u0438 \u0432\u0441\u0435 \u0437\u0430\u043F\u0438\u0441\u0438</button></div>" : ''));
+    carType = c.type || 'car';
+    sheet("<h2>".concat(id ? 'Транспорт' : 'Новый транспорт', "</h2>\n  <div class=\"vts\">").concat(VT.map(function (t) { return "<button class=\"vt".concat(t[0] === carType ? ' on' : '', "\" data-t=\"").concat(t[0], "\" onclick=\"pickType('").concat(t[0], "')\">").concat(vb({ type: t[0] }, 44, 24), "<span>").concat(t[1], "</span></button>"); }).join(''), "</div>\n  <div id=\"tnbox\"").concat(carType === 'own' ? '' : ' hidden', "><label>\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0432\u0438\u0434\u0430 \u0442\u0440\u0430\u043D\u0441\u043F\u043E\u0440\u0442\u0430<input id=\"f-tn\" value=\"").concat(esc(c.tn), "\" placeholder=\"\u041D\u0430\u043F\u0440\u0438\u043C\u0435\u0440, \u041A\u0432\u0430\u0434\u0440\u043E\u0446\u0438\u043A\u043B\" maxlength=\"30\"></label></div>\n  <label>\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435<input id=\"f-car\" value=\"").concat(esc(c.name), "\" placeholder=\"Kia Rio 2018\"></label>\n  <div class=\"row\"><button class=\"btn\" onclick=\"saveCar()\">\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C</button><button class=\"btn sec\" onclick=\"closeSheet()\">\u041E\u0442\u043C\u0435\u043D\u0430</button></div>\n  ").concat(id ? "<div class=\"row\"><button class=\"btn sec dng\" onclick=\"delCar(this)\">\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0438 \u0432\u0441\u0435 \u0437\u0430\u043F\u0438\u0441\u0438</button></div>" : ''));
 }
 function saveCar() {
     var n = $('#f-car').value.trim();
     if (!n) {
-        toast('Введите название автомобиля');
+        toast('Введите название');
         return;
     }
-    if (editing)
-        S.cars.find(function (x) { return x.id === editing; }).name = n;
+    var tn = carType === 'own' ? $('#f-tn').value.trim() : '';
+    if (carType === 'own' && !tn) {
+        toast('Назовите вид транспорта');
+        return;
+    }
+    if (editing) {
+        var c = S.cars.find(function (x) { return x.id === editing; });
+        c.name = n;
+        c.type = carType;
+        c.tn = tn;
+    }
     else {
         var id = uid();
-        S.cars.push({ id: id, name: n });
+        S.cars.push({ id: id, name: n, type: carType, tn: tn });
         S.cur = id;
     }
     save();
